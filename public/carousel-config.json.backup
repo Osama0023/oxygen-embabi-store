@@ -1,0 +1,24 @@
+{
+  "images": [
+    {
+      "id": "img_1742317740573",
+      "url": "/images/carousel/logo-onepiece.png",
+      "order": 1
+    },
+    {
+      "id": "img_1742316948325",
+      "url": "/images/carousel/logo.png",
+      "order": 2
+    },
+    {
+      "id": "img_1750691732884",
+      "url": "/images/carousel/logo copy.png",
+      "order": 3
+    },
+    {
+      "id": "img_1750772692578",
+      "url": "https://res.cloudinary.com/dsqkbe2qw/image/upload/v1750706326/embabi-store/carousel/gtsmjetsec1hdflc8wi4.png",
+      "order": 4
+    }
+  ]
+}
