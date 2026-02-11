@@ -14,6 +14,7 @@ export function Navbar() {
   const { t } = useTranslation();
 
   const isAdmin = session?.user?.role === 'ADMIN';
+  const isMediaBuyer = session?.user?.role === 'MEDIA_BUYER';
 
   return (
     <nav className="border-b">
@@ -33,6 +34,15 @@ export function Navbar() {
               >
                 <Settings className="h-5 w-5" />
                 Admin Dashboard
+              </Link>
+            )}
+            {isMediaBuyer && (
+              <Link 
+                href="/admin/analytics" 
+                className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+              >
+                <Settings className="h-5 w-5" />
+                Analytics
               </Link>
             )}
           </div>

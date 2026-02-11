@@ -72,6 +72,8 @@ export function LoginForm() {
         // Then handle redirection
         if (role === 'ADMIN') {
           router.push('/admin');
+        } else if (role === 'MEDIA_BUYER') {
+          router.push('/admin/analytics');
         } else if (fromCart) {
           // If coming from cart, redirect back to cart page instead of checkout
           router.push('/cart');

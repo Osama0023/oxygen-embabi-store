@@ -50,6 +50,7 @@ export function UserButton() {
               <div className="px-4 py-2 border-b">
                 <p className="text-sm font-medium text-gray-900">{session.user.name}</p>
                 <p className="text-sm text-gray-500">{session.user.email}</p>
+                <p className="text-xs text-gray-400">Role: {(session.user.role ?? '').toString()}</p>
               </div>
               <Link
                 href="/profile"
@@ -59,7 +60,7 @@ export function UserButton() {
                 <Settings className="h-4 w-4" />
                 {t('common.profile')}
               </Link>
-              {session.user.role === 'ADMIN' && (
+              {((session.user.role ?? '').toString().toUpperCase() === 'ADMIN') && (
                 <Link
                   href="/admin"
                   className="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 flex items-center gap-2"
@@ -69,7 +70,7 @@ export function UserButton() {
                   {t('common.adminDashboard')}
                 </Link>
               )}
-              {session.user.role === 'MEDIA_BUYER' && (
+              {((session.user.role ?? '').toString().toUpperCase() === 'MEDIA_BUYER') && (
                 <Link
                   href="/admin/analytics"
                   className="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 flex items-center gap-2"
