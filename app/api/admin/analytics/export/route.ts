@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAdminRequest } from "@/lib/admin-auth";
+import { isAnalyticsUserRequest } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 
 function getDateFilter(range: string) {
@@ -23,7 +23,7 @@ function getDateFilter(range: string) {
 
 export async function GET(request: NextRequest) {
   try {
-    if (!(await isAdminRequest(request))) {
+    if (!(await isAnalyticsUserRequest(request))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

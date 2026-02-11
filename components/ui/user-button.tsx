@@ -69,6 +69,16 @@ export function UserButton() {
                   {t('common.adminDashboard')}
                 </Link>
               )}
+              {session.user.role === 'MEDIA_BUYER' && (
+                <Link
+                  href="/admin/analytics"
+                  className="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Settings className="h-4 w-4" />
+                  {t('common.adminDashboard')}
+                </Link>
+              )}
               <button
                 onClick={handleSignOut}
                 className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2"

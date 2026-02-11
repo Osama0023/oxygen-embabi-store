@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { isAdminRequest } from "@/lib/admin-auth";
+import { isAnalyticsUserRequest } from "@/lib/admin-auth";
 
 export async function GET(request: NextRequest) {
   try {
-    if (!(await isAdminRequest(request))) {
+    if (!(await isAnalyticsUserRequest(request))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { searchParams } = new URL(request.url);
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!(await isAdminRequest(request))) {
+    if (!(await isAnalyticsUserRequest(request))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const body = await request.json();

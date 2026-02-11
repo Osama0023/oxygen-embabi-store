@@ -1,22 +1,39 @@
-import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-import { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  // Use same secret as NextAuth (v4 uses NEXTAUTH_SECRET; we also set AUTH_SECRET)
   const secret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
   const token = await getToken({ req: request, secret });
-  
-  // Check if user is trying to access admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    if (!token || token.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/', request.url));
+
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    const path = request.nextUrl.pathname;
+
+    // No auth at all → block any admin access
+    if (!token || !token.role) {
+      return NextResponse.redirect(new URL("/", request.url));
     }
+
+    // Full admin has access to everything under /admin
+    if (token.role === "ADMIN") {
+      return NextResponse.next();
+    }
+
+    // Media buyer: only allow analytics page
+    if (
+      token.role === "MEDIA_BUYER" &&
+      (path === "/admin/analytics" || path.startsWith("/admin/analytics"))
+    ) {
+      return NextResponse.next();
+    }
+
+    // Any other role trying to hit /admin → redirect home
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*']
-}; 
+  matcher: ["/admin/:path*"],
+};
