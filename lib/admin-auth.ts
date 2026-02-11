@@ -14,9 +14,12 @@ export async function isAdminRequest(request: Request): Promise<boolean> {
   if (session?.user?.role === "ADMIN") return true;
 
   const authHeader = request.headers.get("Authorization");
+  console.log("[isAdminRequest] authHeader", authHeader);
+
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
     const payload = await verifyMobileToken(token);
+    console.log("[isAdminRequest] mobile payload", payload);
     if (payload?.role === "ADMIN") return true;
   }
 
