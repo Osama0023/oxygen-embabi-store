@@ -14,7 +14,14 @@ export async function isAdminRequest(request: Request): Promise<boolean> {
   if (session?.user?.role === "ADMIN") return true;
 
   const authHeader = request.headers.get("Authorization");
-  console.log("[isAdminRequest] authHeader", authHeader);
+  console.log(
+    "[isAdminRequest] url",
+    request.url,
+    "authHeader",
+    authHeader,
+    "ua",
+    request.headers.get("user-agent")
+  );
 
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
