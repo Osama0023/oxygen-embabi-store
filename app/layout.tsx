@@ -9,6 +9,7 @@ import { cookies } from 'next/headers';
 import { Toaster } from "react-hot-toast";
 import { OrganizationStructuredData } from "@/components/seo/structured-data";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -111,6 +112,7 @@ export default async function RootLayout({
               }}
             />
             <noscript>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 height="1" 
                 width="1" 
@@ -122,6 +124,7 @@ export default async function RootLayout({
           </>
         )}
         {/* End Meta Pixel Code */}
+        <Analytics />
       </body>
     </html>
   );
