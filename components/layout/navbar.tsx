@@ -67,8 +67,9 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Check if user is admin
+  // Check user roles
   const isAdmin = session?.user?.role === 'ADMIN';
+  const isMediaBuyer = session?.user?.role === 'MEDIA_BUYER';
 
   return (
     <div className="sticky top-0 z-50">
@@ -240,6 +241,16 @@ export function Navbar() {
                         >
                           <LayoutDashboard className="h-4 w-4 me-2" />
                           <TranslatedContent translationKey="navbar.dashboard" />
+                        </Link>
+                      )}
+                      {isMediaBuyer && (
+                        <Link
+                          href="/admin/analytics"
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50"
+                          onClick={() => setIsProfileOpen(false)}
+                        >
+                          <LayoutDashboard className="h-4 w-4 me-2" />
+                          Analytics
                         </Link>
                       )}
                       <Link

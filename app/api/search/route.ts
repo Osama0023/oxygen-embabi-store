@@ -48,10 +48,10 @@ export async function GET(request: Request) {
       }),
     ]);
 
-    // Convert Decimal to string in the response
-    const formattedProducts = products.map(product => ({
+    // Convert Decimal to string in the response, handle nullable price
+    const formattedProducts = products.map((product) => ({
       ...product,
-      price: product.price.toString()
+      price: product.price ? product.price.toString() : "0",
     }));
 
     const response = NextResponse.json({ 

@@ -67,10 +67,19 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(debouncedValue)}`);
         const data = await response.json();
-        setResults(data);
+
+        // Normalize response shape to avoid runtime errors if API returns an error object
+        const normalized: SearchResult = {
+          products: Array.isArray(data?.products) ? data.products : [],
+          categories: Array.isArray(data?.categories) ? data.categories : [],
+        };
+
+        setResults(normalized);
         setIsOpen(true);
       } catch (error) {
         console.error('Search error:', error);
+        setResults({ products: [], categories: [] });
+        setIsOpen(true);
       }
     };
 
@@ -85,6 +94,7 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
 
   const formatPrice = (priceStr: string) => {
     const price = parseFloat(priceStr);
+    if (Number.isNaN(price)) return priceStr;
     return price.toFixed(2);
   };
 

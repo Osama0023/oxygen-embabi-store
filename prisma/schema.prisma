@@ -407,6 +407,7 @@ enum EventType {
 enum Role {
   USER
   ADMIN
+  MEDIA_BUYER
 }
 
 enum OrderStatus {
