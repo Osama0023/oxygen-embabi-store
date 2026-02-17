@@ -9,6 +9,7 @@ export default function SettingsPage() {
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [disabledPaymentMethods, setDisabledPaymentMethods] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -23,6 +24,7 @@ export default function SettingsPage() {
         const data = await response.json();
         setIsMaintenanceMode(data.maintenanceMode);
         setMaintenanceMessage(data.maintenanceMessage || '');
+        setDisabledPaymentMethods(data.disabledPaymentMethods || []);
       } catch (error) {
         console.error('Error fetching settings:', error);
         toast.error('Failed to load settings');
@@ -48,6 +50,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           maintenanceMode: isMaintenanceMode,
           maintenanceMessage: maintenanceMessage || 'Site is under maintenance. Please try again later.',
+          disabledPaymentMethods,
         }),
       });
 
@@ -140,6 +143,47 @@ export default function SettingsPage() {
               <p className="mt-1 text-sm text-gray-500">
                 This message will be displayed to users when maintenance mode is enabled.
               </p>
+            </div>
+
+            {/* Disabled Payment Methods (when maintenance is enabled) */}
+            <div>
+              <h3 className="text-lg font-medium">Disabled Payment Methods (in maintenance)</h3>
+              <p className="text-sm text-gray-500">
+                Select which payment methods should be disabled while maintenance mode is enabled.
+                Other payment methods will remain available.
+              </p>
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  { value: 'CASH', label: 'Cash on Delivery' },
+                  { value: 'ONLINE', label: 'Online Payment' },
+                  { value: 'CASH_STORE_PICKUP', label: 'Cash - Store Pickup' },
+                  { value: 'ONLINE_STORE_PICKUP', label: 'Online - Store Pickup' },
+                ].map((method) => {
+                  const checked = disabledPaymentMethods.includes(method.value);
+                  return (
+                    <label
+                      key={method.value}
+                      className={`flex items-center gap-2 rounded border px-3 py-2 text-sm cursor-pointer ${
+                        checked ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-gray-50'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4"
+                        checked={checked}
+                        onChange={() => {
+                          setDisabledPaymentMethods((prev) =>
+                            prev.includes(method.value)
+                              ? prev.filter((m) => m !== method.value)
+                              : [...prev, method.value]
+                          );
+                        }}
+                      />
+                      <span>{method.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Save Button */}

@@ -5,7 +5,7 @@ import { MetadataRoute } from 'next';
  * This will be served at /robots.txt
  */
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://embabi-store.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.oxgenembabi.com';
   
   return {
     rules: {

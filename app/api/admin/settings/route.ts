@@ -48,7 +48,7 @@ export async function PUT(request: Request) {
     }
 
     const data = await request.json();
-    
+
     // Validate maintenanceMode is provided
     if (data.maintenanceMode === undefined) {
       return NextResponse.json(
@@ -63,11 +63,17 @@ export async function PUT(request: Request) {
       update: {
         maintenanceMode: data.maintenanceMode,
         maintenanceMessage: data.maintenanceMessage || "Site is under maintenance. Please try again later.",
+        disabledPaymentMethods: Array.isArray(data.disabledPaymentMethods)
+          ? data.disabledPaymentMethods
+          : [],
       },
       create: {
         id: "site-settings",
         maintenanceMode: data.maintenanceMode,
         maintenanceMessage: data.maintenanceMessage || "Site is under maintenance. Please try again later.",
+        disabledPaymentMethods: Array.isArray(data.disabledPaymentMethods)
+          ? data.disabledPaymentMethods
+          : [],
       }
     });
 

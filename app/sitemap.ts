@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
  * This will be served at /sitemap.xml
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://embabi-store.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.oxgenembabi.com';
   
   // Base URLs (static pages)
   const staticPages = [

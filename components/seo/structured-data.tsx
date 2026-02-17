@@ -30,7 +30,7 @@ export function OrganizationStructuredData({
   url,
 }: OrganizationStructuredDataProps) {
   const pathname = usePathname();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://embabi-store.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.oxgenembabi.com';
   const organizationUrl = url || siteUrl;
   
   const structuredData = {
@@ -73,7 +73,7 @@ export function ProductStructuredData({
   reviews = []
 }: ProductStructuredDataProps) {
   const pathname = usePathname();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://embabi-store.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-site.com';
   const productUrl = `${siteUrl}${pathname}`;
   
   // Format images URLs
