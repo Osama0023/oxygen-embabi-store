@@ -20,7 +20,7 @@ const arabicFont = Tajawal({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://embabi-store.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.oxgenembabi.com'),
   title: {
     template: '%s | Embabi Store',
     default: 'Oxgen Embabi Store - Your One-Stop Shop for All Your Needs',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    creator: '@embabistore',
+    creator: '@oxgenembabi',
   },
   verification: {
     google: 'your-google-verification-code', // Replace with your Google verification code

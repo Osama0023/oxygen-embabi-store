@@ -12,7 +12,8 @@ export async function GET() {
     if (!settings) {
       const response = NextResponse.json({
         maintenanceMode: false,
-        maintenanceMessage: ""
+        maintenanceMessage: "",
+        disabledPaymentMethods: [],
       });
       
       // Add caching headers - cache for 2 minutes (maintenance settings don't change often)
@@ -23,7 +24,8 @@ export async function GET() {
 
     const response = NextResponse.json({
       maintenanceMode: settings.maintenanceMode,
-      maintenanceMessage: settings.maintenanceMessage
+      maintenanceMessage: settings.maintenanceMessage,
+      disabledPaymentMethods: settings.disabledPaymentMethods || [],
     });
     
     // Add caching headers - cache for 2 minutes (maintenance settings don't change often)
@@ -35,7 +37,8 @@ export async function GET() {
     // Default to non-maintenance mode in case of error
     return NextResponse.json({
       maintenanceMode: false,
-      maintenanceMessage: ""
+      maintenanceMessage: "",
+      disabledPaymentMethods: [],
     });
   }
 } 

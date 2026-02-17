@@ -100,7 +100,7 @@ export function Breadcrumbs({ product, category, overrides = {} }: BreadcrumbsPr
       '@type': 'ListItem',
       'position': index + 1,
       'item': {
-        '@id': `${process.env.NEXT_PUBLIC_SITE_URL || 'https://embabi-store.com'}${breadcrumb.href}`,
+        '@id': `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.oxgenembabi.com'}${breadcrumb.href}`,
         'name': breadcrumb.name
       }
     }))

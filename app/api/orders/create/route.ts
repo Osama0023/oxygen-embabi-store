@@ -169,6 +169,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid total amount' }, { status: 400 });
     }
 
+    // If maintenance mode is enabled, optionally block only specific payment methods
+    if (siteSettings?.maintenanceMode) {
+      const disabled = siteSettings.disabledPaymentMethods || [];
+      // Map client paymentMethod strings to DB enum values
+      const selectedPaymentEnum =
+        paymentMethod === 'cash'
+          ? 'CASH'
+          : paymentMethod === 'online'
+          ? 'ONLINE'
+          : paymentMethod === 'cash_store_pickup'
+          ? 'CASH_STORE_PICKUP'
+          : paymentMethod === 'online_store_pickup'
+          ? 'ONLINE_STORE_PICKUP'
+          : null;
+
+      if (selectedPaymentEnum && disabled.includes(selectedPaymentEnum as any)) {
+        console.log(
+          `Payment method ${selectedPaymentEnum} is disabled in maintenance mode. Blocking order creation.`
+        );
+        return NextResponse.json(
+          {
+            error:
+              siteSettings.maintenanceMessage ||
+              'This payment method is temporarily disabled. Please choose another method.',
+          },
+          { status: 503 }
+        );
+      }
+    }
+
     // Validate coupon minimum order when coupon is applied
     if (couponData?.id) {
       const coupon = await prisma.coupon.findUnique({

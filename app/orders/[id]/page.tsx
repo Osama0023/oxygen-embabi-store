@@ -148,6 +148,9 @@ export default async function OrderPage({
   const subtotal = order.items.reduce((total, item) => {
     return total + (Number(item.price) * item.quantity);
   }, 0);
+  // Derive shipping from stored total: total = subtotal - discount + shipping => shipping = total - subtotal + discount
+  const discountNum = Number(order.discountAmount ?? 0);
+  const shippingAmount = Math.max(0, Number(order.total) - subtotal + discountNum);
 
   return (
     <div className="flex justify-center items-center py-12 px-4 bg-gray-50 min-h-[calc(100vh-4rem)]">
@@ -215,9 +218,13 @@ export default async function OrderPage({
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <CreditCard className="w-4 h-4" />
               <span>
-                {order.paymentMethod === 'CASH' 
+                {order.paymentMethod === 'CASH'
                   ? (lang === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery')
-                  : (lang === 'ar' ? 'الدفع الإلكتروني' : 'Online Payment')
+                  : order.paymentMethod === 'CASH_STORE_PICKUP'
+                    ? (lang === 'ar' ? 'كاش - استلام من المتجر' : 'Cash - Store Pickup')
+                    : order.paymentMethod === 'ONLINE_STORE_PICKUP'
+                      ? (lang === 'ar' ? 'أونلاين - استلام من المتجر' : 'Online - Store Pickup')
+                      : (lang === 'ar' ? 'الدفع الإلكتروني' : 'Online Payment')
                 }
               </span>
             </div>
@@ -388,7 +395,7 @@ export default async function OrderPage({
             
             <div className="flex justify-between">
               <p className="text-gray-500">{t('order.shipping')}</p>
-              <p>EGP 300</p>
+              <p>EGP {shippingAmount.toLocaleString()}</p>
             </div>
             <div className="flex justify-between font-semibold text-lg pt-3 border-t border-gray-200 mt-3">
               <p>{t('order.total')}</p>

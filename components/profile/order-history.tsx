@@ -16,7 +16,7 @@ interface Order {
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
-  paymentMethod: 'CASH' | 'ONLINE';
+  paymentMethod: 'CASH' | 'ONLINE' | 'CASH_STORE_PICKUP' | 'ONLINE_STORE_PICKUP';
   createdAt: string;
   shippingName: string;
   shippingPhone: string;
@@ -174,7 +174,7 @@ export function OrderHistory() {
                   {t('profile.placedOn')} {new Date(order.createdAt).toLocaleDateString()}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  {t('order.paymentMethod')}: {order.paymentMethod === 'ONLINE' ? t('profile.onlinePayment') : t('profile.cashOnDelivery')}
+                  {t('order.paymentMethod')}: {order.paymentMethod === 'ONLINE' || order.paymentMethod === 'ONLINE_STORE_PICKUP' ? (order.paymentMethod === 'ONLINE_STORE_PICKUP' ? t('profile.onlineStorePickup') : t('profile.onlinePayment')) : (order.paymentMethod === 'CASH_STORE_PICKUP' ? t('profile.cashOnStorePickup') : t('profile.cashOnDelivery'))}
                 </p>
               </div>
               <OrderStatusBadge status={order.status} />
@@ -248,7 +248,7 @@ export function OrderHistory() {
               </Link>
               
               {/* Actions */}
-              {order.status === OrderStatus.PENDING && order.paymentMethod === 'CASH' && (
+              {order.status === OrderStatus.PENDING && (order.paymentMethod === 'CASH' || order.paymentMethod === 'CASH_STORE_PICKUP') && (
                 <button
                   onClick={() => handleCancelOrder(order.id)}
                   disabled={cancellingOrderId === order.id}
@@ -266,7 +266,7 @@ export function OrderHistory() {
               )}
 
               {/* Refund button for successful online payments that are not shipped/delivered/cancelled */}
-              {order.paymentMethod === 'ONLINE'
+              {(order.paymentMethod === 'ONLINE' || order.paymentMethod === 'ONLINE_STORE_PICKUP')
                 && order.paymentStatus === PaymentStatus.SUCCESS
                 && order.status !== OrderStatus.SHIPPED
                 && order.status !== OrderStatus.DELIVERED

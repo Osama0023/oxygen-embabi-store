@@ -305,6 +305,8 @@ export const translations = {
       cancel: 'Cancel',
       onlinePayment: 'Online Payment',
       cashOnDelivery: 'Cash on Delivery',
+      cashOnStorePickup: 'Cash - Store Pickup',
+      onlineStorePickup: 'Online - Store Pickup',
       loadMoreOrders: 'Load More Orders',
       loading: 'Loading...',
       showingOrdersCount: 'Showing {shown} of {total} orders'
@@ -1288,6 +1290,8 @@ export const translations = {
       cancel: 'إغلاق',
       onlinePayment: 'دفع أونلاين',
       cashOnDelivery: 'الدفع عند الاستلام',
+      cashOnStorePickup: 'كاش - استلام من المتجر',
+      onlineStorePickup: 'أونلاين - استلام من المتجر',
       loadMoreOrders: 'تحميل المزيد من الطلبات',
       loading: 'جاري التحميل...',
       showingOrdersCount: 'عرض {shown} من {total} طلب'

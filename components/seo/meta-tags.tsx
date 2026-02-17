@@ -21,7 +21,7 @@ export function MetaTags({
   canonical,
 }: MetaTagsProps) {
   const pathname = usePathname();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://embabi-store.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.oxgenembabi.com';
   const url = canonical || `${siteUrl}${pathname}`;
   
   // Ensure title is properly formatted
