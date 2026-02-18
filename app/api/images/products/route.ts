@@ -64,9 +64,8 @@ export async function GET() {
 
     const response = NextResponse.json(allImages);
     
-    // Add caching headers - cache for 5 minutes to allow new uploads to appear faster
-    // Temporarily set to no-cache for testing, change back to 300 after testing
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    // Add caching headers - cache for 5 minutes to reduce request volume (Vercel/serverless)
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
     
     return response;
   } catch (error) {

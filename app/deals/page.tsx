@@ -6,7 +6,7 @@ import { translations } from "@/lib/translations";
 import { getProductDisplayPrice } from "@/lib/utils";
 
 // Add revalidation - cache for 3 minutes (deals change frequently)
-export const revalidate = 180;
+export const revalidate = 21600;
 
 const ITEMS_PER_PAGE = 20;
 

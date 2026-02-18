@@ -8,7 +8,7 @@ import { ChevronRight } from "lucide-react";
 import { notFound } from "next/navigation";
 
 // Add revalidation - cache for 5 minutes
-export const revalidate = 300;
+export const revalidate = 21600;
 
 interface BrandPageProps {
   params: {
