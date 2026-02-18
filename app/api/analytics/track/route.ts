@@ -3,10 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/auth-options";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 // API route to track analytics events
 export async function POST(request: NextRequest) {
   try {
+    const key = getRateLimitKey(request);
+    const { success } = checkRateLimit(key, "analytics");
+    if (!success) {
+      return NextResponse.json({ success: false }, { status: 429 });
+    }
+
     const body = await request.json();
     const { event, metadata, utm_source, utm_medium, utm_campaign } = body;
 

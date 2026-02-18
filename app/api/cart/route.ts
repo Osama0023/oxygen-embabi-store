@@ -362,11 +362,13 @@ export async function GET() {
       }
     }
     
-    return NextResponse.json({ 
+    const res = NextResponse.json({
       items: cartItems,
       appliedCoupon: coupon,
       discountAmount: calculateDiscount(cartItems, coupon)
     });
+    res.headers.set('Cache-Control', 'private, max-age=30');
+    return res;
   } catch (error) {
     console.error("Error fetching cart:", error);
     return NextResponse.json(
@@ -1249,9 +1251,11 @@ async function getUpdatedCart(userId, sessionId, isAuthenticated) {
     }
   }
   
-  return NextResponse.json({
+  const res = NextResponse.json({
     items: cartItems,
     appliedCoupon: coupon,
     discountAmount: calculateDiscount(cartItems, coupon)
   });
+  res.headers.set('Cache-Control', 'private, max-age=30');
+  return res;
 } 

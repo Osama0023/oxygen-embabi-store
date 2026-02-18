@@ -44,6 +44,8 @@ const DEFAULT_OPTIONS: Record<string, RateLimitOptions> = {
   verify: { limit: 10, windowSeconds: 300 },
   resetPassword: { limit: 5, windowSeconds: 300 },
   contact: { limit: 5, windowSeconds: 300 },
+  /** Analytics track: cap per-IP to reduce spam and Vercel request usage */
+  analytics: { limit: 30, windowSeconds: 60 },
 };
 
 /**
