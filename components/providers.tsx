@@ -7,7 +7,7 @@ import { StoreInitializer } from "./store-initializer";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider refetchInterval={24 * 60 * 60}>
+    <SessionProvider refetchInterval={24 * 60 * 60} refetchOnWindowFocus={false}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
         {children}
         <Toaster position="bottom-right" />

@@ -7,7 +7,7 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 // Add revalidation - cache for 10 minutes
-export const revalidate = 600;
+export const revalidate = 21600;
 
 export default async function CategoriesPage() {
   // Fetch all parent categories with their children

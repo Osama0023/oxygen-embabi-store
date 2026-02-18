@@ -5,7 +5,7 @@ import { getProductDisplayPrice } from "@/lib/utils";
 import { ProductsClient } from "@/components/products/products-client";
 
 // Add revalidation - cache for 3 minutes
-export const revalidate = 180;
+export const revalidate = 21600;
 
 interface SearchParams {
   page?: string;
