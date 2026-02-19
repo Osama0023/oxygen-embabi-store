@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import { Loader2, Lightbulb, Check } from "lucide-react";
 import { getCategoryNameSuggestions, generateSlugPreview, isNameDescriptive, CategorySuggestion } from "@/lib/category-suggestions";
 
@@ -390,7 +390,7 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
 
           {formData.image && (
             <div className="relative w-48 h-48 mx-auto rounded-lg overflow-hidden border-2 border-orange-500">
-              <Image
+              <StoreImage
                 src={formData.image}
                 alt="Selected category image"
                 fill

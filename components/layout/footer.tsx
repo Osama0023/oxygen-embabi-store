@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { TranslatedContent } from '@/components/ui/translated-content';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,7 @@ export function Footer() {
             isRtl && "md:order-3"
           )}>
             <div className="mb-6">
-              <Image 
+              <StoreImage 
                 src="/images/logo/footer-logo.png" 
                 alt="Embabi Store Logo" 
                 width={200}

@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 import { Package, Truck, CheckCircle, Clock, XCircle, Ticket, CreditCard, AlertCircle } from "lucide-react";
 import { authOptions } from "@/app/api/auth/auth-options";
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import { format } from "date-fns";
 import { cookies } from "next/headers";
 import { translations } from "@/lib/translations";
@@ -315,7 +315,7 @@ export default async function OrderPage({
                   return (
               <div key={item.id} className="flex gap-6 p-4 bg-gray-50 rounded-lg">
                 <div className="w-24 h-24 bg-white rounded-lg overflow-hidden relative flex-shrink-0 border border-gray-100">
-                  <Image
+                  <StoreImage
                     src={item.product.images[0]}
                     alt={item.product.name}
                     fill

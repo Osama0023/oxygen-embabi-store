@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { TranslatedContent } from "@/components/ui/translated-content";
 
@@ -9,7 +9,7 @@ export default function ResetPasswordPage() {
         <div className="flex flex-col lg:flex-row">
           {/* Left Side - Image */}
           <div className="lg:w-1/2 relative bg-orange-50 min-h-[300px] lg:min-h-[600px]">
-            <Image
+            <StoreImage
               src="/logo-onepiece.png"
               alt="Reset Password Banner"
               fill

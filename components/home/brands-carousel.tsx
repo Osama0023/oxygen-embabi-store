@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { BrandGroup, getBrandTheme, formatBrandName } from '@/lib/brand-utils';
 
 interface BrandsCarouselProps {
