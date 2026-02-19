@@ -332,6 +332,9 @@ model SiteSettings {
   id                 String   @id @default("site-settings")
   maintenanceMode    Boolean  @default(false)
   maintenanceMessage String   @default("Site is under maintenance. Please try again later.")
+  // When maintenanceMode is enabled, any payment methods listed here
+  // will be blocked while others remain available.
+  disabledPaymentMethods PaymentMethod[] @default([])
   updatedAt          DateTime @default(now()) @updatedAt
 }
 

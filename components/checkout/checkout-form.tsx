@@ -79,11 +79,12 @@ interface Coupon {
 }
 
 // Shared promise to deduplicate maintenance fetches (avoids double fetch + abort from Strict Mode)
-let maintenancePromise: Promise<{ maintenanceMode: boolean; maintenanceMessage: string }> | null = null;
+let maintenancePromise: Promise<{ maintenanceMode: boolean; maintenanceMessage: string; disabledPaymentMethods: string[] }> | null = null;
 
 const useMaintenance = () => {
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
+  const [disabledPaymentMethods, setDisabledPaymentMethods] = useState<string[]>([]);
 
   useEffect(() => {
     if (!maintenancePromise) {
@@ -92,10 +93,11 @@ const useMaintenance = () => {
     maintenancePromise.then((data) => {
       setIsMaintenanceMode(data.maintenanceMode);
       setMaintenanceMessage(data.maintenanceMessage || '');
+      setDisabledPaymentMethods(data.disabledPaymentMethods || []);
     }).catch((err) => console.error('Failed to check maintenance status:', err));
   }, []);
 
-  return { isMaintenanceMode, maintenanceMessage };
+  return { isMaintenanceMode, maintenanceMessage, disabledPaymentMethods };
 };
 
 export default function CheckoutForm({ user, items, subtotal, shipping, onOrderComplete, appliedCoupon: appliedCouponProp }: CheckoutFormProps) {
@@ -116,7 +118,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
   const appliedCoupon = appliedCouponProp ?? null;
   const [discountAmount, setDiscountAmount] = useState(0);
   const couponFetchComplete = true; // Coupon comes from parent now
-  const { isMaintenanceMode, maintenanceMessage } = useMaintenance();
+  const { isMaintenanceMode, maintenanceMessage, disabledPaymentMethods } = useMaintenance();
 
   // Disable body scroll and interactions while loading
   useEffect(() => {
@@ -287,7 +289,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
       localStorage.setItem("lastOrderId", id);
       
       // Track order completed event
-      trackOrderCompleted(id, total);
+      trackOrderCompleted(id, finalTotal);
       // Meta Pixel Purchase
       const w = typeof window !== 'undefined' ? (window as Window & { fbq?: (...args: unknown[]) => void }) : null;
       if (w?.fbq) {
@@ -512,16 +514,27 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
           
           {/* Payment Method Selection */}
           <div className="space-y-3">
+            {/* Cash on Delivery */}
             <div
-              className={`border-2 rounded-lg p-4 cursor-pointer ${selectedPaymentMethod === 'cash' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'}`}
-              onClick={() => setSelectedPaymentMethod('cash')}
+              className={`border-2 rounded-lg p-4 cursor-pointer ${
+                selectedPaymentMethod === 'cash' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'
+              } ${disabledPaymentMethods.includes('CASH') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              onClick={() => {
+                if (disabledPaymentMethods.includes('CASH')) return;
+                setSelectedPaymentMethod('cash');
+              }}
             >
               <div className="flex items-center gap-3">
                 <BanknoteIcon className="h-6 w-6 text-orange-600" />
                 <span className="font-medium text-orange-800">
                   <TranslatedContent translationKey="checkout.cashOnDelivery" />
                 </span>
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-2">
+                  {disabledPaymentMethods.includes('CASH') && (
+                    <span className="text-xs text-red-600">
+                      {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
+                    </span>
+                  )}
                   <div className={`w-4 h-4 rounded-full ${selectedPaymentMethod === 'cash' ? 'bg-orange-600' : 'bg-gray-300'} flex items-center justify-center`}>
                     <div className="w-2 h-2 rounded-full bg-white"></div>
                   </div>
@@ -529,16 +542,27 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
               </div>
             </div>
 
+            {/* Online Payment */}
             <div
-              className={`border-2 rounded-lg p-4 cursor-pointer ${selectedPaymentMethod === 'online' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}`}
-              onClick={() => setSelectedPaymentMethod('online')}
+              className={`border-2 rounded-lg p-4 cursor-pointer ${
+                selectedPaymentMethod === 'online' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
+              } ${disabledPaymentMethods.includes('ONLINE') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              onClick={() => {
+                if (disabledPaymentMethods.includes('ONLINE')) return;
+                setSelectedPaymentMethod('online');
+              }}
             >
               <div className="flex items-center gap-3">
                 <CreditCard className="h-6 w-6 text-blue-700" />
                 <span className="font-medium text-blue-800">
                   {lang === 'ar' ? 'الدفع أونلاين' : 'Pay Online'}
                 </span>
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-2">
+                  {disabledPaymentMethods.includes('ONLINE') && (
+                    <span className="text-xs text-red-600">
+                      {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
+                    </span>
+                  )}
                   <div className={`w-4 h-4 rounded-full ${selectedPaymentMethod === 'online' ? 'bg-blue-600' : 'bg-gray-300'} flex items-center justify-center`}>
                     <div className="w-2 h-2 rounded-full bg-white"></div>
                   </div>
@@ -546,9 +570,15 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
               </div>
             </div>
 
+            {/* Cash - Store Pickup */}
             <div
-              className={`border-2 rounded-lg p-4 cursor-pointer ${selectedPaymentMethod === 'cash_store_pickup' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white'}`}
-              onClick={() => setSelectedPaymentMethod('cash_store_pickup')}
+              className={`border-2 rounded-lg p-4 cursor-pointer ${
+                selectedPaymentMethod === 'cash_store_pickup' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white'
+              } ${disabledPaymentMethods.includes('CASH_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              onClick={() => {
+                if (disabledPaymentMethods.includes('CASH_STORE_PICKUP')) return;
+                setSelectedPaymentMethod('cash_store_pickup');
+              }}
             >
               <div className="flex items-center gap-3">
                 <BanknoteIcon className="h-6 w-6 text-green-600" />
@@ -560,7 +590,12 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                     {lang === 'ar' ? 'بدون رسوم شحن' : 'No shipping fees'}
                   </p>
                 </div>
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-2">
+                  {disabledPaymentMethods.includes('CASH_STORE_PICKUP') && (
+                    <span className="text-xs text-red-600">
+                      {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
+                    </span>
+                  )}
                   <div className={`w-4 h-4 rounded-full ${selectedPaymentMethod === 'cash_store_pickup' ? 'bg-green-600' : 'bg-gray-300'} flex items-center justify-center`}>
                     <div className="w-2 h-2 rounded-full bg-white"></div>
                   </div>
@@ -568,9 +603,15 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
               </div>
             </div>
 
+            {/* Online - Store Pickup */}
             <div
-              className={`border-2 rounded-lg p-4 cursor-pointer ${selectedPaymentMethod === 'online_store_pickup' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 bg-white'}`}
-              onClick={() => setSelectedPaymentMethod('online_store_pickup')}
+              className={`border-2 rounded-lg p-4 cursor-pointer ${
+                selectedPaymentMethod === 'online_store_pickup' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 bg-white'
+              } ${disabledPaymentMethods.includes('ONLINE_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              onClick={() => {
+                if (disabledPaymentMethods.includes('ONLINE_STORE_PICKUP')) return;
+                setSelectedPaymentMethod('online_store_pickup');
+              }}
             >
               <div className="flex items-center gap-3">
                 <CreditCard className="h-6 w-6 text-purple-700" />
@@ -582,7 +623,12 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                     {lang === 'ar' ? 'بدون رسوم شحن' : 'No shipping fees'}
                   </p>
                 </div>
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-2">
+                  {disabledPaymentMethods.includes('ONLINE_STORE_PICKUP') && (
+                    <span className="text-xs text-red-600">
+                      {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
+                    </span>
+                  )}
                   <div className={`w-4 h-4 rounded-full ${selectedPaymentMethod === 'online_store_pickup' ? 'bg-purple-600' : 'bg-gray-300'} flex items-center justify-center`}>
                     <div className="w-2 h-2 rounded-full bg-white"></div>
                   </div>

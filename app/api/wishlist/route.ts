@@ -198,7 +198,9 @@ export async function GET() {
       }
     }
     
-    return NextResponse.json({ items: wishlistItems });
+    const res = NextResponse.json({ items: wishlistItems });
+    res.headers.set('Cache-Control', 'private, max-age=30');
+    return res;
   } catch (error) {
     console.error("Error fetching wishlist:", error);
     return NextResponse.json(
@@ -471,5 +473,7 @@ async function getUpdatedWishlist(userId, sessionId, isAuthenticated) {
     }
   }
 
-  return NextResponse.json({ items: wishlistItems });
+  const res = NextResponse.json({ items: wishlistItems });
+  res.headers.set('Cache-Control', 'private, max-age=30');
+  return res;
 } 

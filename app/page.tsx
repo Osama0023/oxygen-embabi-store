@@ -13,7 +13,7 @@ import { getProductDisplayPrice } from "@/lib/utils";
 import { groupCategoriesByBrand } from "@/lib/brand-utils";
 
 // Add revalidation - cache for 5 minutes
-export const revalidate = 300;
+export const revalidate = 21600;
 
 export default async function HomePage() {
   // Fetch carousel, hero thumbnails, and active coupons in parallel (server-side to avoid client API calls)

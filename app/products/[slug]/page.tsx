@@ -8,7 +8,7 @@ import { Metadata } from "next";
 import { getProductDisplayPrice } from "@/lib/utils";
 
 // Add revalidation - cache for 5 minutes (product details change occasionally)
-export const revalidate = 300;
+export const revalidate = 21600;
 
 interface ProductPageProps {
   params: { slug: string };
