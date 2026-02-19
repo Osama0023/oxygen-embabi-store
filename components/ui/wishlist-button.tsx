@@ -3,7 +3,7 @@
 import { Heart } from "lucide-react";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "@/hooks/use-translation";
 import { TranslatedContent } from "./translated-content";
 
@@ -28,15 +28,9 @@ interface WishlistButtonProps {
 }
 
 export function WishlistButton({ productId, product, className, variant = 'icon' }: WishlistButtonProps) {
-  const { items, addItem, removeItem, isInitialized, syncWithServer } = useWishlist();
+  const { items, addItem, removeItem, isInitialized } = useWishlist();
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
-
-  useEffect(() => {
-    if (!isInitialized) {
-      syncWithServer();
-    }
-  }, [isInitialized, syncWithServer]);
 
   const isInWishlist = items.some(item => item.id === productId);
 

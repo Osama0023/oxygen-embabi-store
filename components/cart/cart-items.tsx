@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { useCart } from '@/hooks/use-cart';
 import { Minus, Plus, X, ShoppingCart, Ticket } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -143,7 +143,7 @@ export default function CartItems() {
                   {/* Product Image */}
                   <div className="w-full sm:w-28 h-28 bg-gray-50 rounded-xl overflow-hidden relative">
                     <div className="relative h-full w-full">
-                      <Image
+                      <StoreImage
                         src={item.images[0]}
                         alt={item.name}
                         fill

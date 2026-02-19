@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from "react";
+
+const PRODUCT_FORM_IMAGES_DEDUPE_MS = 2000;
+let lastProductFormImagesFetchAt = 0;
 import { useRouter } from "next/navigation";
 import { Category, Product, ProductVariant, ProductDetail } from "@prisma/client";
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { toast } from 'react-hot-toast';
 import { X, Plus, Loader2, Package, HardDrive } from 'lucide-react';
 
@@ -122,6 +125,9 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
   };
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastProductFormImagesFetchAt && now - lastProductFormImagesFetchAt < PRODUCT_FORM_IMAGES_DEDUPE_MS) return;
+    lastProductFormImagesFetchAt = now;
     // Fetch available images from the API (now includes both local and Cloudinary)
     const fetchImages = async () => {
       try {
@@ -949,7 +955,7 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
                   const imageSource = availableImages.find(img => img.url === imagePath)?.source || 'unknown';
                   return (
                     <div key={imagePath} className="relative aspect-square rounded-lg overflow-hidden border-2 border-orange-500">
-                      <Image
+                      <StoreImage
                         src={imagePath}
                         alt={getImageName(imagePath)}
                         fill
@@ -1031,7 +1037,7 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
                   const imageSource = availableImages.find(img => img.url === imagePath)?.source || 'unknown';
                   return (
                     <div key={imagePath} className="relative aspect-square rounded-lg overflow-hidden border-2 border-orange-500">
-                      <Image
+                      <StoreImage
                         src={imagePath}
                         alt={getImageName(imagePath)}
                         fill

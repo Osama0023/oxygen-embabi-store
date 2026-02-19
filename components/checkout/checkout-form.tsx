@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import { CreditCard, Wallet, BanknoteIcon, QrCode, Ticket, AlertTriangle } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useTranslation } from "@/hooks/use-translation";
@@ -50,6 +50,7 @@ interface CheckoutFormProps {
     name: string | null;
     email: string;
   };
+  appliedCoupon?: Coupon | null;
   items: {
     id: string;
     name: string;
@@ -77,32 +78,29 @@ interface Coupon {
   minimumOrderAmount?: number | null;
 }
 
-// Add maintenance mode check function
+// Shared promise to deduplicate maintenance fetches (avoids double fetch + abort from Strict Mode)
+let maintenancePromise: Promise<{ maintenanceMode: boolean; maintenanceMessage: string; disabledPaymentMethods: string[] }> | null = null;
+
 const useMaintenance = () => {
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
   const [disabledPaymentMethods, setDisabledPaymentMethods] = useState<string[]>([]);
 
   useEffect(() => {
-    const checkMaintenanceMode = async () => {
-      try {
-        const response = await fetch('/api/settings/maintenance');
-        const data = await response.json();
-        setIsMaintenanceMode(data.maintenanceMode);
-        setMaintenanceMessage(data.maintenanceMessage);
-        setDisabledPaymentMethods(data.disabledPaymentMethods || []);
-      } catch (error) {
-        console.error('Failed to check maintenance status:', error);
-      }
-    };
-
-    checkMaintenanceMode();
+    if (!maintenancePromise) {
+      maintenancePromise = fetch('/api/settings/maintenance').then((r) => r.json());
+    }
+    maintenancePromise.then((data) => {
+      setIsMaintenanceMode(data.maintenanceMode);
+      setMaintenanceMessage(data.maintenanceMessage || '');
+      setDisabledPaymentMethods(data.disabledPaymentMethods || []);
+    }).catch((err) => console.error('Failed to check maintenance status:', err));
   }, []);
 
   return { isMaintenanceMode, maintenanceMessage, disabledPaymentMethods };
 };
 
-export default function CheckoutForm({ user, items, subtotal, shipping, onOrderComplete }: CheckoutFormProps) {
+export default function CheckoutForm({ user, items, subtotal, shipping, onOrderComplete, appliedCoupon: appliedCouponProp }: CheckoutFormProps) {
   const router = useRouter();
   const { hasUnselectedColors, clearCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
@@ -117,9 +115,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
     notes: ""
   });
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('cash');
-  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const appliedCoupon = appliedCouponProp ?? null;
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [couponFetchComplete, setCouponFetchComplete] = useState(false);
+  const couponFetchComplete = true; // Coupon comes from parent now
   const { isMaintenanceMode, maintenanceMessage, disabledPaymentMethods } = useMaintenance();
 
   // Disable body scroll and interactions while loading
@@ -132,27 +130,6 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
       };
     }
   }, [isLoading]);
-
-  // Fetch any applied coupon
-  useEffect(() => {
-    const fetchCoupon = async () => {
-      try {
-        const response = await fetch('/api/coupons/current');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.coupon) {
-            setAppliedCoupon(data.coupon);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch applied coupon:', error);
-      } finally {
-        setCouponFetchComplete(true);
-      }
-    };
-
-    fetchCoupon();
-  }, []);
 
   // Calculate discount amount when coupon is applied
   useEffect(() => {
@@ -730,7 +707,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
               {items.map((item) => (
                 <div key={item.uniqueId} className="flex gap-3 py-3 border-b border-gray-100">
                   <div className="w-16 h-16 bg-gray-50 rounded-md overflow-hidden relative flex-shrink-0">
-                    <Image
+                    <StoreImage
                       src={item.images[0]}
                       alt={item.name}
                       fill

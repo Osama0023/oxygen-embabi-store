@@ -23,20 +23,11 @@ export default function WishlistPage() {
 
   useEffect(() => {
     const initWishlist = async () => {
-      if (!isInitialized) {
-        await syncWithServer();
-      }
+      if (!isInitialized) await syncWithServer();
       setIsLoading(false);
     };
-
     initWishlist();
   }, [syncWithServer, isInitialized]);
-
-  useEffect(() => {
-    if (!isLoading) {
-      syncWithServer();
-    }
-  }, [syncWithServer, isLoading]);
 
 
 

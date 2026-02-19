@@ -1,7 +1,7 @@
 'use client';
 
 import { Session } from "next-auth";
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { AddToCartButton } from "./add-to-cart-button";
@@ -401,7 +401,7 @@ export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsP
         <div className="space-y-6">
           {/* Main Product Image */}
           <div className="aspect-square relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <Image
+            <StoreImage
               src={selectedImage}
               alt={product.name}
               fill
@@ -428,7 +428,7 @@ export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsP
                 )}
                 onClick={() => handleImageSelect(product.images[0])}
               >
-                <Image
+                <StoreImage
                   src={product.images[0]}
                   alt={`${product.name} main image`}
                   fill
@@ -445,7 +445,7 @@ export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsP
                   )}
                   onClick={() => handleImageSelect(thumbnail)}
                 >
-                  <Image
+                  <StoreImage
                     src={thumbnail}
                     alt={`${product.name} thumbnail ${index + 1}`}
                     fill
@@ -465,7 +465,7 @@ export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsP
                   )}
                   onClick={() => handleImageSelect(image)}
                 >
-                  <Image
+                  <StoreImage
                     src={image}
                     alt={`${product.name} image ${index + 1}`}
                     fill
@@ -814,7 +814,7 @@ export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsP
           onClick={toggleImageZoom}
         >
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full">
-            <Image
+            <StoreImage
               src={selectedImage}
               alt={product.name}
               fill

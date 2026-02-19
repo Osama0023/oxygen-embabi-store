@@ -95,6 +95,9 @@ interface AnalyticsData {
 
 const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899'];
 
+const ANALYTICS_DEDUPE_MS = 2000;
+let lastAnalyticsFetchAt: Record<string, number> = {};
+
 export default function AdminAnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -103,6 +106,9 @@ export default function AdminAnalyticsPage() {
   const [addingSpend, setAddingSpend] = useState(false);
 
   const fetchAnalytics = async (range: string) => {
+    const now = Date.now();
+    if (lastAnalyticsFetchAt[range] && now - lastAnalyticsFetchAt[range] < ANALYTICS_DEDUPE_MS) return;
+    lastAnalyticsFetchAt[range] = now;
     try {
       setIsLoading(true);
       const response = await fetch(`/api/admin/analytics?range=${range}`);

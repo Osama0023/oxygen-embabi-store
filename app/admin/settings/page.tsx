@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
+const SETTINGS_DEDUPE_MS = 2000;
+let lastSettingsFetchAt = 0;
 import { toast } from 'react-hot-toast';
 import { AlertTriangle } from 'lucide-react';
 
@@ -12,6 +15,9 @@ export default function SettingsPage() {
   const [disabledPaymentMethods, setDisabledPaymentMethods] = useState<string[]>([]);
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastSettingsFetchAt && now - lastSettingsFetchAt < SETTINGS_DEDUPE_MS) return;
+    lastSettingsFetchAt = now;
     const fetchSettings = async () => {
       try {
         setIsLoading(true);

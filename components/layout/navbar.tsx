@@ -160,7 +160,7 @@ export function Navbar() {
 
             {/* Logo - Fixed width */}
             <div className="flex-1 md:w-[280px] md:flex-none">
-              <Link href="/" className="flex items-center">
+              <Link href="/" prefetch={false} className="flex items-center">
                 <Image
                   src="/logo.png"
                   alt="Embabi Logo"
@@ -174,24 +174,24 @@ export function Navbar() {
 
             {/* Desktop Navigation - Centered */}
             <div className="hidden md:flex flex-1 items-center justify-center gap-8">
-              <Link href="/products" className="text-gray-700 hover:text-orange-600 text-base">
+              <Link href="/products" prefetch={false} className="text-gray-700 hover:text-orange-600 text-base">
                 <TranslatedContent translationKey="navbar.products" />
               </Link>
-              <Link href="/categories" className="text-gray-700 hover:text-orange-600 text-base">
+              <Link href="/categories" prefetch={false} className="text-gray-700 hover:text-orange-600 text-base">
                 <TranslatedContent translationKey="navbar.categories" />
               </Link>
-              <Link href="/deals" className="flex items-center gap-2 text-gray-700 hover:text-orange-600 text-base">
+              <Link href="/deals" prefetch={false} className="flex items-center gap-2 text-gray-700 hover:text-orange-600 text-base">
                 <span><TranslatedContent translationKey="navbar.deals" /></span>
                 <Flame size={18} className="text-red-500" />
               </Link>
-              <Link href="/most-selling" className="text-gray-700 hover:text-orange-600 text-base">
+              <Link href="/most-selling" prefetch={false} className="text-gray-700 hover:text-orange-600 text-base">
                 <TranslatedContent translationKey="navbar.mostSelling" />
               </Link>
             </div>
 
             {/* Right Side Icons - Fixed width */}
             <div className="flex items-center justify-end gap-4 md:w-[280px] md:flex-none">
-              <Link href="/wishlist" className="relative">
+              <Link href="/wishlist" prefetch={false} className="relative">
                 <Heart className="h-6 w-6 text-gray-700 hover:text-orange-600" />
                 {wishlistItems.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -199,7 +199,7 @@ export function Navbar() {
                   </span>
                 )}
               </Link>
-              <Link href="/cart" className="relative">
+              <Link href="/cart" prefetch={false} className="relative">
                 <ShoppingCart className="h-6 w-6 text-gray-700 hover:text-orange-600" />
                 {items.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-orange-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -218,7 +218,7 @@ export function Navbar() {
                     <User className="h-6 w-6 text-gray-700 hover:text-orange-600" />
                   </button>
                 ) : (
-                  <Link href="/login">
+                  <Link href="/login" prefetch={false}>
                     <User className="h-6 w-6 text-gray-700 hover:text-orange-600" />
                   </Link>
                 )}
@@ -293,6 +293,7 @@ export function Navbar() {
               <div className="flex flex-col space-y-4">
                 <Link 
                   href="/products" 
+                  prefetch={false}
                   className="text-gray-700 hover:text-orange-600 text-base px-4"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -300,6 +301,7 @@ export function Navbar() {
                 </Link>
                 <Link 
                   href="/categories" 
+                  prefetch={false}
                   className="text-gray-700 hover:text-orange-600 text-base px-4"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -307,6 +309,7 @@ export function Navbar() {
                 </Link>
                 <Link 
                   href="/deals" 
+                  prefetch={false}
                   className="flex items-center gap-2 text-gray-700 hover:text-orange-600 text-base px-4"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -315,6 +318,7 @@ export function Navbar() {
                 </Link>
                 <Link 
                   href="/most-selling" 
+                  prefetch={false}
                   className="text-gray-700 hover:text-orange-600 text-base px-4"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -323,6 +327,7 @@ export function Navbar() {
                 {!session && (
                   <Link 
                     href="/login" 
+                    prefetch={false}
                     className="text-gray-700 hover:text-orange-600 text-base px-4"
                     onClick={() => setIsMenuOpen(false)}
                   >

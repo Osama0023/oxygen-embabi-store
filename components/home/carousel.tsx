@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TranslatedContent } from '@/components/ui/translated-content';
@@ -20,6 +20,11 @@ interface HeroThumbnail {
   linkUrl?: string | null;
 }
 
+interface HomeCarouselProps {
+  initialImages?: CarouselImage[];
+  initialThumbnails?: HeroThumbnail[];
+}
+
 // Responsive: aspect-ratio on mobile, fixed height on desktop so carousel + thumbnails align
 const CAROUSEL_WRAPPER =
   'w-full flex flex-col lg:flex-row gap-2 lg:gap-3 min-h-0';
@@ -29,20 +34,37 @@ const CAROUSEL_MAIN_DESKTOP = 'lg:aspect-auto lg:min-h-0 lg:max-h-none lg:h-[360
 const THUMB_GRID_MOBILE = 'min-h-[140px] sm:min-h-[180px]';
 const THUMB_GRID_DESKTOP = 'lg:min-h-0 lg:h-[360px] xl:h-[400px] 2xl:h-[440px]';
 
-export function HomeCarousel() {
-  const [images, setImages] = useState<CarouselImage[]>([]);
-  const [thumbnails, setThumbnails] = useState<HeroThumbnail[]>([]);
+// Module-level guard to prevent duplicate fetches from React Strict Mode double-mount
+let carouselFetchedInSession = false;
+
+export function HomeCarousel({ initialImages = [], initialThumbnails = [] }: HomeCarouselProps) {
+  const hasServerData = initialImages.length > 0 || initialThumbnails.length > 0;
+  const [images, setImages] = useState<CarouselImage[]>(initialImages);
+  const [thumbnails, setThumbnails] = useState<HeroThumbnail[]>(initialThumbnails);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!hasServerData);
   const [error, setError] = useState<string | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
-  const hasLoadedRef = useRef(false);
+  const hasLoadedRef = useRef(hasServerData);
   const minSwipeDistance = 50;
 
+  // Use server data when it arrives (e.g. after RSC streaming)
+  useEffect(() => {
+    if (initialImages.length > 0 || initialThumbnails.length > 0) {
+      setImages(initialImages);
+      setThumbnails(initialThumbnails);
+      hasLoadedRef.current = true;
+    }
+  }, [initialImages, initialThumbnails]);
+
+  const hasInitialData = initialImages.length > 0 || initialThumbnails.length > 0;
   useEffect(() => {
     if (hasLoadedRef.current) return;
+    if (carouselFetchedInSession) return; // Skip duplicate fetch from Strict Mode
+    if (hasInitialData) return; // Server data arrived
+    carouselFetchedInSession = true;
     const fetchData = async () => {
       try {
         setIsLoading(true);
@@ -69,7 +91,7 @@ export function HomeCarousel() {
       }
     };
     fetchData();
-  }, []);
+  }, [hasInitialData]);
 
   useEffect(() => {
     if (images.length <= 1) return;
@@ -153,7 +175,7 @@ export function HomeCarousel() {
                   className="absolute inset-0 transition-opacity duration-700 ease-in-out"
                   style={{ opacity: index === currentIndex ? 1 : 0, pointerEvents: index === currentIndex ? 'auto' : 'none' }}
                 >
-                  <Image
+                  <StoreImage
                     src={image.url}
                     alt={`Slide ${index + 1}`}
                     fill
@@ -221,7 +243,7 @@ export function HomeCarousel() {
               <div key={thumb.id} className="relative rounded-xl overflow-hidden shadow-md min-h-0">
                 {thumb.linkUrl ? (
                   <Link href={thumb.linkUrl} className="block absolute inset-0">
-                    <Image
+                    <StoreImage
                       src={thumb.url}
                       alt=""
                       fill
@@ -230,7 +252,7 @@ export function HomeCarousel() {
                     />
                   </Link>
                 ) : (
-                  <Image
+                  <StoreImage
                     src={thumb.url}
                     alt=""
                     fill

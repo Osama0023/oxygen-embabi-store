@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useTranslation } from "@/hooks/use-translation";
 import { TranslatedContent } from "@/components/ui/translated-content";
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import Link from "next/link";
 import { translations } from "@/lib/translations";
 
@@ -56,6 +56,9 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const searchDedupRef = useRef<{ query: string; at: number }>({ query: '', at: 0 });
+  const SEARCH_DEDUPE_MS = 1500;
+
   useEffect(() => {
     const fetchResults = async () => {
       if (!debouncedValue) {
@@ -63,6 +66,12 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
         setIsOpen(false);
         return;
       }
+
+      const now = Date.now();
+      if (searchDedupRef.current.query === debouncedValue && now - searchDedupRef.current.at < SEARCH_DEDUPE_MS) {
+        return;
+      }
+      searchDedupRef.current = { query: debouncedValue, at: now };
 
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(debouncedValue)}`);
@@ -174,7 +183,7 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
                       >
                         {product.thumbnails[0] && (
                           <div className="flex-shrink-0 w-16 h-16 relative rounded-lg overflow-hidden">
-                            <Image
+                            <StoreImage
                               src={product.thumbnails[0]}
                               alt={product.name}
                               fill
@@ -207,7 +216,7 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
                       >
                         {category.image && (
                           <div className="flex-shrink-0 w-16 h-16 relative rounded-lg overflow-hidden">
-                            <Image
+                            <StoreImage
                               src={category.image}
                               alt={category.name}
                               fill

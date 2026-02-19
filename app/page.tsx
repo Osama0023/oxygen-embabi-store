@@ -16,6 +16,28 @@ import { groupCategoriesByBrand } from "@/lib/brand-utils";
 export const revalidate = 21600;
 
 export default async function HomePage() {
+  // Fetch carousel, hero thumbnails, and active coupons in parallel (server-side to avoid client API calls)
+  const [carouselImages, heroThumbnails, activeCoupons] = await Promise.all([
+    prisma.carouselImage.findMany({
+      where: { isActive: true },
+      orderBy: { order: 'asc' },
+      select: { id: true, url: true, order: true, linkUrl: true },
+    }),
+    prisma.heroThumbnail.findMany({
+      orderBy: { order: 'asc' },
+      take: 4,
+    }),
+    prisma.coupon.findMany({
+      where: {
+        isEnabled: true,
+        OR: [{ endDate: null }, { endDate: { gt: new Date() } }],
+      },
+      select: { id: true, code: true, type: true, value: true, name: true },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }),
+  ]);
+
   // Fetch featured products
   const featuredProducts = await prisma.product.findMany({
     where: {
@@ -384,11 +406,11 @@ export default async function HomePage() {
     <div className="min-h-screen">
       {/* Coupon Promotion Banner - Before Carousel */}
       <div className="w-full pt-2 sm:pt-3 md:pt-4 px-2 sm:px-4">
-        <CouponBanner />
+        <CouponBanner initialCoupons={activeCoupons} />
       </div>
       {/* Hero Carousel Section */}
       <div className="w-full max-w-[1440px] mx-auto px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
-        <HomeCarousel />
+        <HomeCarousel initialImages={carouselImages} initialThumbnails={heroThumbnails} />
       </div>
 
       {/* Categories Section - Distinct background for contrast */}

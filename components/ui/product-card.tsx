@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { useCart } from "@/hooks/use-cart";
 import { toast } from "react-hot-toast";
 import { WishlistButton } from "./wishlist-button";
@@ -186,7 +186,7 @@ export function ProductCard({ product, showDescription = false }: ProductCardPro
       {product.images[0] && (
         <Link href={`/products/${product.slug}`}>
           <div className="aspect-[4/3] relative">
-            <Image
+            <StoreImage
               src={product.images[0]}
               alt={product.name}
               fill

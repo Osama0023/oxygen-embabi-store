@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
+const ORDER_ANALYTICS_DEDUPE_MS = 2000;
+let lastOrderAnalyticsFetchAt = 0;
 import {
   LineChart,
   Line,
@@ -28,6 +31,9 @@ export function OrderAnalytics() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastOrderAnalyticsFetchAt && now - lastOrderAnalyticsFetchAt < ORDER_ANALYTICS_DEDUPE_MS) return;
+    lastOrderAnalyticsFetchAt = now;
     fetch('/api/orders/analytics')
       .then((res) => res.json())
       .then(setAnalytics)

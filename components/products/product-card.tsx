@@ -2,7 +2,7 @@
 
 import { formatPrice, cn } from "@/lib/utils";
 import { Heart, ShoppingCart, X } from "lucide-react";
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useWishlist } from "@/hooks/use-wishlist";
@@ -187,7 +187,7 @@ export function ProductCard({ product }: ProductCardProps) {
       >
         <div className="aspect-square relative group">
           {product.images[0] && (
-            <Image
+            <StoreImage
               src={product.images[0]}
               alt={product.name}
               fill

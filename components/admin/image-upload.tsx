@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 
 interface UploadedImage {
   url: string;
@@ -174,7 +174,7 @@ export function ImageUpload({
             {uploadedImages.map((image) => (
               <div key={image.publicId} className="relative group">
                 <div className="aspect-square relative rounded-lg overflow-hidden border-2 border-green-500">
-                  <Image
+                  <StoreImage
                     src={image.url}
                     alt={image.originalName}
                     fill

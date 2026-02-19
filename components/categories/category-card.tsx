@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -52,7 +52,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
       >
         {/* Category Image */}
         {category.image ? (
-          <Image
+          <StoreImage
             src={category.image}
             alt={category.name}
             fill
@@ -128,7 +128,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
                   >
                     <div className="relative aspect-square rounded-md overflow-hidden">
                       {product.images[0] && (
-                        <Image
+                        <StoreImage
                           src={product.images[0]}
                           alt={product.name}
                           fill

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { OrderStatus } from "@prisma/client";
 import { useTranslation } from "@/hooks/use-translation";
@@ -15,16 +15,19 @@ interface DashboardStats {
   ordersByStatus: Record<OrderStatus, number>;
 }
 
+const STATS_DEDUPE_MS = 2000;
+let lastStatsFetchAt = 0;
+
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useTranslation();
 
   useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
+    const now = Date.now();
+    if (lastStatsFetchAt && now - lastStatsFetchAt < STATS_DEDUPE_MS) return;
+    lastStatsFetchAt = now;
+    const fetchStats = async () => {
     try {
       const response = await fetch('/api/admin/stats');
       if (!response.ok) throw new Error('Failed to fetch stats');
@@ -32,10 +35,13 @@ export default function AdminDashboardPage() {
       setStats(data);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
+      lastStatsFetchAt = 0;
     } finally {
       setIsLoading(false);
     }
-  };
+    };
+    fetchStats();
+  }, []);
 
   const getStatusLabel = (status: string) => {
     const statusMap: Record<string, string> = {

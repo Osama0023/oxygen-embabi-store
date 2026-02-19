@@ -23,28 +23,31 @@ interface WishlistStore {
   isInWishlist: (id: string) => boolean;
 }
 
+const WISHLIST_SYNC_STALE_MS = 30_000;
+let lastWishlistFetchAt = 0;
+
 export const useWishlist = create<WishlistStore>()((set, get) => ({
   items: [],
   isInitialized: false,
   
   syncWithServer: async () => {
+    const now = Date.now();
+    if (lastWishlistFetchAt && now - lastWishlistFetchAt < WISHLIST_SYNC_STALE_MS) return;
     try {
       const response = await fetch('/api/wishlist');
       
       if (!response.ok) {
         console.error(`Failed to sync wishlist: ${response.status}`);
+        lastWishlistFetchAt = Date.now();
         return;
       }
       
       const data = await response.json();
-      
-      // Update the store with the server data
-      set({ items: data.items || [] });
-      
-      // Mark as initialized
-      set({ isInitialized: true });
+      lastWishlistFetchAt = Date.now();
+      set({ items: data.items || [], isInitialized: true });
     } catch (error) {
       console.error('Failed to sync wishlist:', error);
+      lastWishlistFetchAt = Date.now();
     }
   },
   

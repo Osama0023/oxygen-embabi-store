@@ -82,6 +82,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Apply middleware to admin and to all non-static, non-_next paths for bot filtering
-  matcher: ["/admin/:path*", "/((?!_next|.*\\..*).*)"],
+  // Skip API, static assets, and Next.js internals; run middleware only for pages and admin
+  matcher: [
+    "/admin/:path*",
+    "/((?!api|_next/static|_next/image|favicon.ico|app-icon|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff2?)$).*)",
+  ],
 };
