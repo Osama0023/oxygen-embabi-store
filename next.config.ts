@@ -30,7 +30,16 @@ const nextConfig: NextConfig = {
       cspParts.push("upgrade-insecure-requests");
     }
     const csp = cspParts.join("; ");
+    const longCache = "public, max-age=31536000, immutable";
     return [
+      // Aggressive browser cache for static icons/logos – reduces edge requests
+      { source: "/app-icon.png", headers: [{ key: "Cache-Control", value: longCache }] },
+      { source: "/favicon.ico", headers: [{ key: "Cache-Control", value: longCache }] },
+      { source: "/icon.png", headers: [{ key: "Cache-Control", value: longCache }] },
+      { source: "/icon.ico", headers: [{ key: "Cache-Control", value: longCache }] },
+      { source: "/logo.png", headers: [{ key: "Cache-Control", value: longCache }] },
+      { source: "/logo-onepiece.png", headers: [{ key: "Cache-Control", value: longCache }] },
+      { source: "/images/logo/:path*", headers: [{ key: "Cache-Control", value: longCache }] },
       {
         source: "/:path*",
         headers: [
