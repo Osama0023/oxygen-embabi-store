@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import { VerificationForm } from "@/components/auth/verification-form";
 import { redirect } from "next/navigation";
 import { cookies } from 'next/headers';
@@ -38,7 +38,7 @@ export default function VerifyPage({ searchParams }: VerifyPageProps) {
     <div className="flex min-h-screen">
       {/* Left side - Image */}
       <div className="hidden lg:flex lg:w-1/2 bg-orange-50 items-center justify-center">
-        <Image
+        <StoreImage
           src="/images/logo/logo-onepiece.png"
           alt="Authentication"
           width={600}

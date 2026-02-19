@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import { LoginForm } from "@/components/auth/login-form";
 import { cookies } from "next/headers";
 import { translations } from "@/lib/translations";
@@ -23,7 +23,7 @@ export default function LoginPage() {
         <div className="flex flex-col lg:flex-row">
           {/* Left Side - Image */}
           <div className="lg:w-1/2 relative bg-orange-50 min-h-[300px] lg:min-h-[600px]">
-            <Image
+            <StoreImage
               src="/logo-onepiece.png"
               alt="Login Banner"
               fill

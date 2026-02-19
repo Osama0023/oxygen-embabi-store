@@ -22,7 +22,7 @@ import { faWhatsapp, faFacebook } from '@fortawesome/free-brands-svg-icons';
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { TranslatedContent } from "@/components/ui/translated-content";
 import { useTranslation } from "@/hooks/use-translation";
@@ -161,7 +161,7 @@ export function Navbar() {
             {/* Logo - Fixed width */}
             <div className="flex-1 md:w-[280px] md:flex-none">
               <Link href="/" prefetch={false} className="flex items-center">
-                <Image
+                <StoreImage
                   src="/logo.png"
                   alt="Embabi Logo"
                   width={250}
