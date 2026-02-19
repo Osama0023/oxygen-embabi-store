@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { useTranslation } from '@/hooks/use-translation';
 
 interface Subcategory {
@@ -120,7 +120,7 @@ export function SubcategoriesCarousel({ subcategories }: SubcategoriesCarouselPr
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 transform group-hover:-translate-y-1 border border-gray-100 hover:border-orange-200">
               <div className="aspect-[4/3] relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
                 {subcategory.image ? (
-                  <Image
+                  <StoreImage
                     src={subcategory.image}
                     alt={subcategory.name}
                     fill

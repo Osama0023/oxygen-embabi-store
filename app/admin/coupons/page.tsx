@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
+const COUPONS_DEDUPE_MS = 2000;
+let lastCouponsFetchAt = 0;
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { Ticket, CalendarClock, Users, PercentCircle, Check, X } from 'lucide-react';
@@ -22,6 +25,9 @@ export default function AdminCouponsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastCouponsFetchAt && now - lastCouponsFetchAt < COUPONS_DEDUPE_MS) return;
+    lastCouponsFetchAt = now;
     fetchCoupons();
   }, []);
 

@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { InstructionDialog } from '@/components/admin/instruction-dialog';
 import { useTranslation } from '@/hooks/use-translation';
+
+const PRODUCTS_DEDUPE_MS = 2000;
+let lastProductsFetchAt = 0;
 
 interface Product {
   id: string;
@@ -27,6 +30,9 @@ export default function AdminProductsPage() {
   const { t } = useTranslation();
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastProductsFetchAt && now - lastProductsFetchAt < PRODUCTS_DEDUPE_MS) return;
+    lastProductsFetchAt = now;
     fetchProducts();
   }, []);
 
@@ -161,7 +167,7 @@ export default function AdminProductsPage() {
                 <td className="px-6 py-4">
                   {product.images[0] && (
                     <div className="relative w-20 h-20">
-                      <Image
+                      <StoreImage
                         src={product.images[0]}
                         alt={product.name}
                         fill

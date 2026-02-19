@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { X, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { toast } from 'react-hot-toast';
@@ -331,7 +331,7 @@ export function ProductSelectionModal({ isOpen, onClose, product }: ProductSelec
         <div className="p-6 space-y-6">
           {/* Product Image */}
           <div className="aspect-square relative bg-gray-50 rounded-lg overflow-hidden">
-            <Image
+            <StoreImage
               src={product.images[0]}
               alt={product.name}
               fill

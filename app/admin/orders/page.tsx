@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect } from "react";
+
+const ORDERS_DEDUPE_MS = 2000;
+let lastOrdersFetchAt: Record<number, number> = {};
 import { formatPrice } from "@/lib/utils";
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { PaymentStatusBadge } from "@/components/admin/payment-status-badge";
@@ -38,6 +41,9 @@ export default function AdminOrdersPage() {
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastOrdersFetchAt[currentPage] && now - lastOrdersFetchAt[currentPage] < ORDERS_DEDUPE_MS) return;
+    lastOrdersFetchAt[currentPage] = now;
     fetchOrders(currentPage);
   }, [currentPage]);
 

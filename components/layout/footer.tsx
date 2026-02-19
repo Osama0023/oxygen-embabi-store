@@ -46,31 +46,31 @@ export function Footer() {
               <TranslatedContent translationKey="footer.quickLinks" />
             </h4>
             <div className="grid grid-cols-2 gap-2 md:block md:space-y-3">
-              <Link href="/products" className={cn(
+              <Link href="/products" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>
                 <TranslatedContent translationKey="footer.products" />
               </Link>
-              <Link href="/categories" className={cn(
+              <Link href="/categories" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>
                 <TranslatedContent translationKey="footer.categories" />
               </Link>
-              <Link href="/reviews" className={cn(
+              <Link href="/reviews" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>
                 <TranslatedContent translationKey="footer.reviews" />
               </Link>
-              <Link href="/policies" className={cn(
+              <Link href="/policies" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>
                 <TranslatedContent translationKey="footer.policies" />
               </Link>
-              <Link href="/contact" className={cn(
+              <Link href="/contact" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>

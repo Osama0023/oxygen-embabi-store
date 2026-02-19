@@ -15,13 +15,19 @@ interface ActiveCoupon {
   name: string;
 }
 
-export function CouponBanner() {
-  const [coupons, setCoupons] = useState<ActiveCoupon[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface CouponBannerProps {
+  initialCoupons?: ActiveCoupon[];
+}
+
+export function CouponBanner({ initialCoupons = [] }: CouponBannerProps) {
+  const hasServerData = initialCoupons.length > 0;
+  const [coupons, setCoupons] = useState<ActiveCoupon[]>(initialCoupons);
+  const [isLoading, setIsLoading] = useState(!hasServerData);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
+    if (hasServerData) return;
     fetch('/api/coupons/active')
       .then((res) => res.json())
       .then((data) => {
@@ -29,7 +35,7 @@ export function CouponBanner() {
       })
       .catch(() => setCoupons([]))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [hasServerData]);
 
   const handleCopy = async (code: string) => {
     try {

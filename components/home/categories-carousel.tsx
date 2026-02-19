@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -130,7 +130,7 @@ export function CategoriesCarousel({ categories }: CategoriesCarouselProps) {
             <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform group-hover:-translate-y-2 group-hover:scale-105 border border-gray-100">
               <div className="aspect-[4/3] relative overflow-hidden">
                 {category.image && (
-                  <Image
+                  <StoreImage
                     src={category.image}
                     alt={category.name}
                     fill

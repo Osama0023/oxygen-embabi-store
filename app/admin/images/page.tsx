@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
+const IMAGES_DEDUPE_MS = 2000;
+let lastImagesFetchAt = 0;
 import { ImageUpload } from '@/components/admin/image-upload';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { toast } from 'react-hot-toast';
 
 interface ImageItem {
@@ -52,6 +55,9 @@ export default function ImageManagementPage() {
   };
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastImagesFetchAt && now - lastImagesFetchAt < IMAGES_DEDUPE_MS) return;
+    lastImagesFetchAt = now;
     fetchImages();
   }, []);
 
@@ -183,7 +189,7 @@ export default function ImageManagementPage() {
                 {productImages.map((image, index) => (
                   <div key={index} className="relative group">
                     <div className="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                      <Image
+                      <StoreImage
                         src={image.url}
                         alt={`Product image ${index + 1}`}
                         fill
@@ -255,7 +261,7 @@ export default function ImageManagementPage() {
                 {categoryImages.map((image, index) => (
                   <div key={index} className="relative group">
                     <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-                      <Image
+                      <StoreImage
                         src={image.url}
                         alt={`Category image ${index + 1}`}
                         fill
@@ -327,7 +333,7 @@ export default function ImageManagementPage() {
                 {carouselImages.map((image, index) => (
                   <div key={index} className="relative group">
                     <div className="relative w-full aspect-[3/1] bg-gray-100 rounded-lg overflow-hidden">
-                      <Image
+                      <StoreImage
                         src={image.url}
                         alt={`Carousel image ${index + 1}`}
                         fill

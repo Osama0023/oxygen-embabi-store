@@ -207,6 +207,7 @@ export default function CheckoutPage({ user }: CheckoutPageProps) {
             subtotal={subtotal}
             shipping={shipping}
             onOrderComplete={handleOrderComplete}
+            appliedCoupon={appliedCouponState}
           />
         </div>
       </div>

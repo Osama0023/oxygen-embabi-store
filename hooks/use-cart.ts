@@ -55,6 +55,11 @@ interface CartStore {
   removeCoupon: () => Promise<boolean>;
 }
 
+const SYNC_STALE_MS = 30_000; // Skip fetch if last sync was < 30s ago (matches API Cache-Control)
+const COUPON_FETCH_STALE_MS = 30_000; // Skip duplicate coupon loads
+let lastCartFetchAt = 0;
+let lastCouponFetchAt = 0;
+
 export const useCart = create<CartStore>()((set, get) => ({
       items: [],
       isInitialized: false,
@@ -62,12 +67,14 @@ export const useCart = create<CartStore>()((set, get) => ({
   discountAmount: 0,
       
       syncWithServer: async () => {
+        const now = Date.now();
+        if (lastCartFetchAt && now - lastCartFetchAt < SYNC_STALE_MS) return;
         try {
           const response = await fetch('/api/cart');
       
           if (!response.ok) {
             console.error(`Failed to sync cart: ${response.status}`);
-            // Still set initialized to true but keep empty cart
+            lastCartFetchAt = Date.now();
             set({
               items: [],
               appliedCoupon: null,
@@ -79,6 +86,7 @@ export const useCart = create<CartStore>()((set, get) => ({
           const data = await response.json();
       
           // Update the store with the server data
+          lastCartFetchAt = Date.now();
           set({
             items: data.items || [],
             appliedCoupon: data.appliedCoupon || null,
@@ -86,7 +94,7 @@ export const useCart = create<CartStore>()((set, get) => ({
           });
         } catch (error) {
           console.error('Failed to sync cart:', error);
-          // Set an empty initialized state on error
+          lastCartFetchAt = Date.now();
           set({
             items: [],
             appliedCoupon: null,
@@ -98,11 +106,11 @@ export const useCart = create<CartStore>()((set, get) => ({
   // Load coupon from cookie
   loadCouponFromCookies: async () => {
     try {
-      // If cart is empty, don't load coupon
-      if (get().items.length === 0) {
-        return null;
-      }
-      
+      if (get().items.length === 0) return null;
+      const now = Date.now();
+      if (lastCouponFetchAt && now - lastCouponFetchAt < COUPON_FETCH_STALE_MS) return get().appliedCoupon ?? null;
+
+      lastCouponFetchAt = now;
       const response = await fetch('/api/coupons/current');
       
       if (!response.ok) {

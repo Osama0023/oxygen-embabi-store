@@ -135,13 +135,21 @@ export async function trackEvent({ event, metadata, utm }: TrackEventParams) {
   }
 }
 
+// Dedupe PAGE_VIEW within 2s (avoids double fire from React Strict Mode)
+const PAGE_VIEW_DEDUPE_MS = 2000;
+let lastPageViewAt = 0;
+let lastPageViewPath = "";
+
 // Track page view
 export function trackPageView(path?: string) {
+  const p = path || (typeof window !== "undefined" ? window.location.pathname : "");
+  const now = Date.now();
+  if (lastPageViewPath === p && now - lastPageViewAt < PAGE_VIEW_DEDUPE_MS) return;
+  lastPageViewPath = p;
+  lastPageViewAt = now;
   trackEvent({
     event: "PAGE_VIEW",
-    metadata: {
-      path: path || (typeof window !== "undefined" ? window.location.pathname : ""),
-    },
+    metadata: { path: p },
   });
 }
 
@@ -157,11 +165,15 @@ export function trackAddToCart(productId: string, productName?: string, quantity
   });
 }
 
-// Track checkout started
+// Dedupe CHECKOUT_STARTED (avoids double fire from Strict Mode)
+let lastCheckoutStartedAt = 0;
+const CHECKOUT_DEDUPE_MS = 3000;
+
 export function trackCheckoutStarted() {
-  trackEvent({
-    event: "CHECKOUT_STARTED",
-  });
+  const now = Date.now();
+  if (now - lastCheckoutStartedAt < CHECKOUT_DEDUPE_MS) return;
+  lastCheckoutStartedAt = now;
+  trackEvent({ event: "CHECKOUT_STARTED" });
 }
 
 // Track order completed

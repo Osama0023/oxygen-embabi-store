@@ -1,7 +1,7 @@
 'use client';
 
 import { Product, Category, ProductVariant } from "@prisma/client";
-import Image from "next/image";
+import { StoreImage } from "@/components/ui/store-image";
 import Link from "next/link";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -119,7 +119,7 @@ export default function WishlistItems({ products }: WishlistItemsProps) {
         >
           {/* Product Image */}
           <div className="relative aspect-square overflow-hidden">
-            <Image
+            <StoreImage
               src={product.images[0] || '/images/placeholder.png'}
               alt={product.name}
               fill

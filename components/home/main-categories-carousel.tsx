@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
 interface MainCategory {
@@ -127,7 +127,7 @@ export function MainCategoriesCarousel({ categories }: MainCategoriesCarouselPro
             <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-gray-800 shadow-md hover:shadow-2xl border border-gray-100 dark:border-gray-700 transition-all duration-500 ease-out group-hover:-translate-y-2 group-hover:border-orange-200 dark:group-hover:border-orange-800 group-hover:shadow-orange-100 dark:group-hover:shadow-orange-900/20">
               <div className="aspect-[4/3] relative overflow-hidden">
                 {category.image ? (
-                  <Image
+                  <StoreImage
                     src={category.image}
                     alt={category.name}
                     fill

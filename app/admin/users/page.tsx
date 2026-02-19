@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
+const USERS_DEDUPE_MS = 2000;
+let lastUsersFetchAt = 0;
 import { toast } from 'react-hot-toast';
 
 interface User {
@@ -19,6 +22,9 @@ export default function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastUsersFetchAt && now - lastUsersFetchAt < USERS_DEDUPE_MS) return;
+    lastUsersFetchAt = now;
     fetchUsers();
   }, []);
 

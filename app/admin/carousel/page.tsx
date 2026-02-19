@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
+const CAROUSEL_DEDUPE_MS = 2000;
+let lastCarouselFetchAt = 0;
 import { ArrowUp, ArrowDown, Trash2, ImagePlus, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import Image from 'next/image';
+import { StoreImage } from '@/components/ui/store-image';
 import { InstructionDialog } from '@/components/admin/instruction-dialog';
 
 interface CarouselImage {
@@ -32,6 +35,9 @@ export default function CarouselManagementPage() {
   const [savingThumbnails, setSavingThumbnails] = useState(false);
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastCarouselFetchAt && now - lastCarouselFetchAt < CAROUSEL_DEDUPE_MS) return;
+    lastCarouselFetchAt = now;
     const fetchImages = async () => {
       try {
         setIsLoading(true);
@@ -407,7 +413,7 @@ export default function CarouselManagementPage() {
               <div key={order} className="border border-gray-200 rounded-lg overflow-hidden">
                 <div className="relative aspect-[4/3] bg-gray-100">
                   {thumb.url ? (
-                    <Image src={thumb.url} alt={`Thumbnail ${order}`} fill className="object-cover" />
+                    <StoreImage src={thumb.url} alt={`Thumbnail ${order}`} fill className="object-cover" />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">Slot {order}</div>
                   )}
@@ -430,7 +436,7 @@ export default function CarouselManagementPage() {
                           thumb.url === img ? 'border-blue-500' : 'border-gray-200'
                         }`}
                       >
-                        <Image src={img} alt="" width={32} height={32} className="object-cover w-full h-full" />
+                        <StoreImage src={img} alt="" width={32} height={32} className="object-cover w-full h-full" />
                       </button>
                     ))}
                   </div>
@@ -481,7 +487,7 @@ export default function CarouselManagementPage() {
             {images.map((image, index) => (
               <div key={image.id} className="relative bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
                 <div className="relative aspect-video w-full">
-                  <Image 
+                  <StoreImage 
                     src={image.url} 
                     alt={`Carousel image ${index + 1}`}
                     fill
@@ -593,7 +599,7 @@ export default function CarouselManagementPage() {
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
               <div className="flex items-center space-x-4">
                 <div className="relative w-32 h-20 bg-gray-100 rounded overflow-hidden">
-                  <Image 
+                  <StoreImage 
                     src={selectedImage}
                     alt="Selected carousel image"
                     fill
@@ -653,7 +659,7 @@ export default function CarouselManagementPage() {
                   ${selectedImage === image ? 'ring-2 ring-blue-500 border-blue-500' : 'hover:shadow-md border-gray-200'}`}
               >
                 <div className="relative w-full aspect-video">
-                  <Image 
+                  <StoreImage 
                     src={image}
                     alt={`Available image ${index + 1}`}
                     fill

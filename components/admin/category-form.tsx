@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from "react";
+
+const CATEGORY_FORM_DEDUPE_MS = 2000;
+let lastCategoryFormFetchAt = 0;
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { Loader2, X, Image as ImageIcon, AlertCircle } from "lucide-react";
-import Image from "next/image";
 
 interface Category {
   id: string;
@@ -37,6 +39,9 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
   });
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastCategoryFormFetchAt && now - lastCategoryFormFetchAt < CATEGORY_FORM_DEDUPE_MS) return;
+    lastCategoryFormFetchAt = now;
     // Fetch parent categories
     fetch('/api/categories')
       .then(res => res.json())

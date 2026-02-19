@@ -7,23 +7,32 @@ import { getProductDisplayPrice } from "@/lib/utils";
 
 // Helper to get user identifier (either user ID if logged in or anonymous session ID)
 const getUserIdentifier = async () => {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions).catch(() => null);
+
   if (session?.user?.id) {
-    return { userId: session.user.id, sessionId: null, isAuthenticated: true };
+    const userExists = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true },
+    });
+    if (userExists) {
+      return { userId: session.user.id, sessionId: null, isAuthenticated: true };
+    }
+    // Session has stale userId (user was deleted) - fall through to anonymous
   }
-  
+
   // For anonymous users, use a session cookie
   const cookieStore = await cookies();
   let sessionId = cookieStore.get('wishlist_session_id')?.value;
   
   if (!sessionId) {
-    // Generate a new session ID if none exists
-    sessionId = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    const { randomUUID } = await import('crypto');
+    sessionId = `anon_${randomUUID()}`;
     cookieStore.set('wishlist_session_id', sessionId, {
       path: '/',
       maxAge: 60 * 60 * 24 * 30, // 30 days
       httpOnly: true,
-      sameSite: 'lax'
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
     });
   }
   
@@ -209,6 +218,9 @@ export async function POST(request: Request) {
     // Handle different wishlist actions
     switch (action) {
       case 'ADD_ITEM':
+        if (!item?.id) {
+          return NextResponse.json({ error: "Item and product ID are required" }, { status: 400 });
+        }
         return await addItemToWishlist(userId, sessionId, isAuthenticated, item);
         
       case 'REMOVE_ITEM':
@@ -221,13 +233,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
-    console.error("Error processing wishlist action:", error);
-      return NextResponse.json(
-      { error: "Failed to process wishlist action" },
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error("Error processing wishlist action:", err.message, err.stack);
+    const isDev = process.env.NODE_ENV === "development";
+    return NextResponse.json(
+      {
+        error: "Failed to process wishlist action",
+        ...(isDev && { debug: err.message }),
+      },
       { status: 500 }
-      );
+    );
   }
-    }
+}
 
 // Helper to ensure a wishlist exists
 async function ensureWishlistExists(userId, sessionId, isAuthenticated) {
@@ -291,16 +308,16 @@ async function addItemToWishlist(userId, sessionId, isAuthenticated, item) {
         productId: id
       }
     });
-    
+
     if (!existingItem) {
       await prisma.anonymousWishlistItem.create({
-          data: {
+        data: {
           wishlistId: wishlist.id,
           productId: id
         }
-        });
-      }
+      });
     }
+  }
 
   // Return updated wishlist
   return await getUpdatedWishlist(userId, sessionId, isAuthenticated);

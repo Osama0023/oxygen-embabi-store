@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
+
+const CATEGORIES_DEDUPE_MS = 2000;
+let lastCategoriesFetchAt = 0;
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -32,6 +35,9 @@ export function CategoryList() {
   const { t } = useTranslation();
 
   useEffect(() => {
+    const now = Date.now();
+    if (lastCategoriesFetchAt && now - lastCategoriesFetchAt < CATEGORIES_DEDUPE_MS) return;
+    lastCategoriesFetchAt = now;
     fetchCategories();
   }, []);
 
@@ -184,10 +190,10 @@ export function CategoryList() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {parentCategories.map((parent) => (
-              <>
+              <Fragment key={parent.id}>
                 {renderCategoryRow(parent, false)}
                 {childCategoriesMap.get(parent.id)?.map(child => renderCategoryRow(child, true))}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
