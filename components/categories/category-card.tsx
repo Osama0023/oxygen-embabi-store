@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { StoreImage } from '@/components/ui/store-image';
-import Link from 'next/link';
+import { LocaleLink } from '@/components/locale-link';
 import { formatPrice } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TranslatedContent } from '@/components/ui/translated-content';
@@ -46,7 +46,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
       transition={{ duration: 0.3 }}
     >
       {/* Category Card */}
-      <Link
+      <LocaleLink
         href={`/categories/${category.slug}`}
         className={`block relative h-64 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ${!hasProducts ? 'opacity-70' : ''}`}
       >
@@ -102,7 +102,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
             )}
           </p>
         </motion.div>
-      </Link>
+      </LocaleLink>
 
       {/* Products Preview Popup */}
       <AnimatePresence>
@@ -122,7 +122,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: index * 0.1 }}
                 >
-                  <Link
+                  <LocaleLink
                     href={`/products/${product.slug}`}
                     className="block group/product"
                   >
@@ -152,8 +152,8 @@ export function CategoryCard({ category }: CategoryCardProps) {
                         {formatPrice(product.price)}
                       </p>
                     </motion.div>
-                  </Link>
-                </motion.div>
+        </LocaleLink>
+      </motion.div>
               ))}
             </div>
             

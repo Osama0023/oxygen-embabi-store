@@ -3,7 +3,7 @@
 import { formatPrice, cn } from "@/lib/utils";
 import { Heart, ShoppingCart, X } from "lucide-react";
 import { StoreImage } from "@/components/ui/store-image";
-import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 import { toast } from "react-hot-toast";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useCart } from "@/hooks/use-cart";
@@ -181,7 +181,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <Link
+      <LocaleLink
         href={`/products/${product.slug}`}
         className="group bg-white rounded-lg overflow-hidden hover:shadow-md transition duration-300"
       >
@@ -282,7 +282,7 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
         </div>
-      </Link>
+      </LocaleLink>
       
       {/* Product Selection Modal */}
       <ProductSelectionModal

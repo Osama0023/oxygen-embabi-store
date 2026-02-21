@@ -32,12 +32,13 @@ export async function GET() {
   }
 }
 
-// POST route to create a new site review (requires authentication)
+// POST route to create a new review (site or product)
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const { rating, comment } = await request.json();
-    
+    const body = await request.json();
+    const { rating, comment, productId } = body;
+
     if (rating === undefined || rating < 1 || rating > 5) {
       return NextResponse.json(
         { error: 'Rating must be between 1 and 5' },
@@ -45,20 +46,38 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!comment || comment.trim().length === 0) {
+    // Product reviews require auth and purchase eligibility
+    if (productId) {
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Sign in to leave a product review' }, { status: 401 });
+      }
+      const hasPurchased = await prisma.orderItem.findFirst({
+        where: {
+          productId,
+          order: { userId: session.user.id, status: 'DELIVERED' },
+        },
+      });
+      if (!hasPurchased) {
+        return NextResponse.json({ error: 'Purchase this product to leave a review' }, { status: 403 });
+      }
+    }
+
+    // Site reviews: comment required. Product reviews: comment optional.
+    if (!productId && (!comment || comment.trim().length === 0)) {
       return NextResponse.json(
         { error: 'Comment is required' },
         { status: 400 }
       );
     }
 
-    // Create the review with or without user association
+    // Create the review
     const review = await prisma.review.create({
       data: {
         rating,
-        comment,
-        type: "site",
-        ...(session?.user ? { userId: session.user.id } : {})
+        comment: comment?.trim() || null,
+        type: productId ? 'product' : 'site',
+        ...(session?.user ? { userId: session.user.id } : {}),
+        ...(productId ? { productId } : {}),
       },
       include: {
         user: {

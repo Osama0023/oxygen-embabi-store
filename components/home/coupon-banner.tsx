@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { LocaleLink } from '@/components/locale-link';
 import { Ticket, Copy, Check } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { TranslatedContent } from '@/components/ui/translated-content';
@@ -68,12 +68,12 @@ export function CouponBanner({ initialCoupons = [] }: CouponBannerProps) {
                 </p>
               </div>
             </div>
-            <Link
+            <LocaleLink
               href="/products"
               className="inline-flex items-center justify-center px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-red-600 font-semibold rounded-full text-sm sm:text-base shadow-md min-w-[120px] sm:min-w-[140px] hover:bg-white/95 transition-colors self-start sm:self-auto"
             >
               <TranslatedContent translationKey="home.buyNow" />
-            </Link>
+            </LocaleLink>
           </div>
 
           {/* Coupon codes section */}

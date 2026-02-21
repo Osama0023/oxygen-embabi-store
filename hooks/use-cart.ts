@@ -412,8 +412,15 @@ export const useCart = create<CartStore>()((set, get) => ({
 
       hasUnselectedColors: () => {
         const items = get().items;
-    return items.some(item => item.availableColors && item.availableColors.length > 0 && !item.selectedColor);
-  },
+        // Only require color when product has real color variants (not just _default for no-variant products)
+        return items.some(
+          (item) =>
+            item.availableColors &&
+            item.availableColors.length > 0 &&
+            item.availableColors.some((c) => c.color !== "_default") &&
+            !item.selectedColor
+        );
+      },
 
   clearCart: async () => {
     try {

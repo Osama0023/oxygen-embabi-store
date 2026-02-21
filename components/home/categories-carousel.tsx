@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { StoreImage } from '@/components/ui/store-image';
-import Link from 'next/link';
+import { LocaleLink } from '@/components/locale-link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Category {
@@ -121,7 +121,7 @@ export function CategoriesCarousel({ categories }: CategoriesCarouselProps) {
         }}
       >
         {categories.map((category, index) => (
-          <Link
+          <LocaleLink
             key={category.id}
             href={`/categories/${category.slug}`}
             className="group flex-shrink-0 w-[42vw] min-w-[140px] max-w-[180px] sm:w-48 sm:min-w-0 sm:max-w-none md:w-56 lg:w-72 relative"
@@ -156,7 +156,7 @@ export function CategoriesCarousel({ categories }: CategoriesCarouselProps) {
               {/* Bottom Section with Border */}
               <div className="h-2 bg-gradient-to-r from-orange-500 to-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
             </div>
-          </Link>
+          </LocaleLink>
         ))}
       </div>
     </div>

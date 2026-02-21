@@ -174,12 +174,15 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
     return phoneRegex.test(phone);
   };
 
-  // Check if any items require color selection but don't have one
+  // Check if any items require color selection but don't have one.
+  // Products with no variants get availableColors: [{ color: '_default', ... }] — no real choice, so don't require selection.
+  const hasRealColorChoice = (item: typeof items[0]) =>
+    item.availableColors &&
+    item.availableColors.length > 0 &&
+    item.availableColors.some((c) => c.color !== "_default");
   const checkItemsWithMissingColors = () => {
-    return items.some(item => 
-      item.availableColors && 
-      item.availableColors.length > 0 && 
-      !item.selectedColor
+    return items.some(
+      (item) => hasRealColorChoice(item) && !item.selectedColor
     );
   };
 

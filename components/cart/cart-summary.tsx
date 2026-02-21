@@ -27,8 +27,12 @@ export function CartSummary() {
       return;
     }
 
-    // Check if all required colors are selected
-    if (items.some(item => item.availableColors?.length > 0 && !item.selectedColor)) {
+    // Check if all required colors are selected (only when product has real color variants, not just _default)
+    const hasRealColorChoice = (item: typeof items[0]) =>
+      item.availableColors &&
+      item.availableColors.length > 0 &&
+      item.availableColors.some((c) => c.color !== "_default");
+    if (items.some((item) => hasRealColorChoice(item) && !item.selectedColor)) {
       e.preventDefault();
       toast.error('Please select colors for all items');
       return;
