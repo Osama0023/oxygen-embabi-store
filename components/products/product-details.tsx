@@ -1,8 +1,7 @@
 'use client';
 
-import { Session } from "next-auth";
 import { StoreImage } from "@/components/ui/store-image";
-import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 import { Eye, EyeOff } from "lucide-react";
 import { AddToCartButton } from "./add-to-cart-button";
 import { WishlistButton } from "@/components/ui/wishlist-button";
@@ -11,6 +10,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/use-translation";
 import { ProductsHorizontalScroll } from "@/components/home/products-horizontal-scroll";
+import { WriteReviewButton } from "./write-review-button";
 
 type UnitWithTax = {
   id: string;
@@ -110,8 +110,7 @@ interface ProductDetailsProps {
       };
     }>;
   };
-  session: Session | null;
-  hasPurchased?: boolean;
+  productId: string;
   youMayAlsoLike?: ProductForCard[];
 }
 
@@ -142,7 +141,7 @@ function getUnitTaxNote(
   return t('productDetail.taxExcluded');
 }
 
-export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsProps) {
+export function ProductDetails({ product, productId, youMayAlsoLike = [] }: ProductDetailsProps) {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
 
@@ -629,7 +628,7 @@ export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsP
                     <span className="inline-flex px-4 py-2 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
                       {t('productDetail.outOfStock')}
                     </span>
-                    <Link
+                    <LocaleLink
                       href="/products"
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-orange-600 text-white hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 transition-colors shadow-sm hover:shadow group"
                     >
@@ -637,7 +636,7 @@ export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsP
                       <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
-                    </Link>
+                    </LocaleLink>
                   </div>
                 ) : salePrice ? (
                   <>
@@ -741,36 +740,29 @@ export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsP
         </div>
       )}
 
-      {/* Reviews Section */}
-      {/* <div className="border-t border-gray-200 pt-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">{t('productDetail.customerReviews')}</h2>
-          {hasPurchased && (
-            <button 
-              className="px-6 py-2 bg-orange-100 text-orange-700 rounded-full font-medium hover:bg-orange-200 transition-colors"
-              onClick={() => document.getElementById('review-form')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              {t('productDetail.writeReview')}
-            </button>
-          )}
+      {/* Reviews Section - always show list; Write button appears after client-side eligibility check */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-16">
+        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('productDetail.customerReviews')}</h2>
+          <WriteReviewButton productId={productId} onSuccess={() => window.location.reload()} />
         </div>
 
         {product.reviews.length === 0 ? (
-          <div className="bg-gray-50 rounded-xl p-8 text-center">
-            <p className="text-gray-600">{t('productDetail.noReviews')}</p>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 text-center">
+            <p className="text-gray-600 dark:text-gray-400">{t('productDetail.noReviews')}</p>
           </div>
         ) : (
           <div className="space-y-8">
             {product.reviews.map((review) => (
-              <div key={review.id} className="bg-gray-50 rounded-xl p-6">
+              <div key={review.id} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold">
                       {review.user.name?.charAt(0) || 'U'}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{review.user.name || t('productDetail.anonymous')}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-gray-900 dark:text-white">{review.user.name || t('productDetail.anonymous')}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {new Date(review.createdAt).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')}
                       </p>
                     </div>
@@ -782,30 +774,18 @@ export function ProductDetails({ product, youMayAlsoLike = [] }: ProductDetailsP
                         className={`h-5 w-5 ${
                           star <= review.rating
                             ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-300'
+                            : 'text-gray-300 dark:text-gray-600'
                         }`}
                       />
                     ))}
                   </div>
                 </div>
-                <p className="text-gray-700">{review.comment}</p>
+                <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
               </div>
             ))}
           </div>
-      //   )} */
-      }
-
-         {/* Review Form */}
-      {/* //   {hasPurchased && ( */}
-      {/* //     <div id="review-form" className="mt-16">
-      //       <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('productDetail.writeReviewHeading')}</h3>
-      //       <ReviewForm 
-      //         productId={product.id} 
-      //         onSuccess={() => window.location.reload()}
-      //       />
-      //     </div>
-      //   )}
-      // </div> */}
+        )}
+      </div>
 
       {/* Image Zoom Modal */}
       {showImage && (

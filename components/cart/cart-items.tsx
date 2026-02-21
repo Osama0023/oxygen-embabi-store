@@ -5,7 +5,7 @@ import { StoreImage } from '@/components/ui/store-image';
 import { useCart } from '@/hooks/use-cart';
 import { Minus, Plus, X, ShoppingCart, Ticket } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import Link from 'next/link';
+import { LocaleLink } from '@/components/locale-link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { TranslatedContent } from '@/components/ui/translated-content';
@@ -122,12 +122,12 @@ export default function CartItems() {
         <p className="text-gray-600 mb-6">
           <TranslatedContent translationKey="cart.emptyCartMessage" />
         </p>
-        <Link
+        <LocaleLink
           href="/products"
           className="inline-block bg-orange-600 text-white px-8 py-3 rounded-full hover:bg-orange-700 transition-colors"
         >
           <TranslatedContent translationKey="cart.startShopping" />
-        </Link>
+        </LocaleLink>
       </div>
     );
   }
@@ -156,9 +156,9 @@ export default function CartItems() {
                   {/* Product Details */}
                   <div className="flex-1">
                     <div className="flex justify-between">
-                      <Link href={`/products/${item.slug}`} className="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors">
+                      <LocaleLink href={`/products/${item.slug}`} className="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors">
                         {item.name}
-                      </Link>
+                      </LocaleLink>
                       <button
                         onClick={() => handleRemoveItem(item.uniqueId ?? `${item.id}-${item.selectedColor || 'no-color'}-${item.storageId || 'no-storage'}`)}
                         className="text-gray-400 hover:text-red-500 transition-colors"

@@ -1,12 +1,16 @@
 'use client';
 
-import Link from 'next/link';
+import { LocaleLink } from '@/components/locale-link';
 import { StoreImage } from '@/components/ui/store-image';
 import { TranslatedContent } from '@/components/ui/translated-content';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 
-export function Footer() {
+interface FooterProps {
+  locale?: 'en' | 'ar';
+}
+
+export function Footer({ locale: _locale }: FooterProps) {
   const { lang } = useTranslation();
   const isRtl = lang === 'ar';
 
@@ -46,36 +50,36 @@ export function Footer() {
               <TranslatedContent translationKey="footer.quickLinks" />
             </h4>
             <div className="grid grid-cols-2 gap-2 md:block md:space-y-3">
-              <Link href="/products" prefetch={false} className={cn(
+              <LocaleLink href="/products" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>
                 <TranslatedContent translationKey="footer.products" />
-              </Link>
-              <Link href="/categories" prefetch={false} className={cn(
+              </LocaleLink>
+              <LocaleLink href="/categories" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>
                 <TranslatedContent translationKey="footer.categories" />
-              </Link>
-              <Link href="/reviews" prefetch={false} className={cn(
+              </LocaleLink>
+              <LocaleLink href="/reviews" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>
                 <TranslatedContent translationKey="footer.reviews" />
-              </Link>
-              <Link href="/policies" prefetch={false} className={cn(
+              </LocaleLink>
+              <LocaleLink href="/policies" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>
                 <TranslatedContent translationKey="footer.policies" />
-              </Link>
-              <Link href="/contact" prefetch={false} className={cn(
+              </LocaleLink>
+              <LocaleLink href="/contact" prefetch={false} className={cn(
                 "text-gray-400 hover:text-white text-sm md:text-base block text-center md:text-left",
                 isRtl && "md:text-right"
               )}>
                 <TranslatedContent translationKey="footer.contact" />
-              </Link>
+              </LocaleLink>
             </div>
           </div>
 

@@ -1,15 +1,15 @@
 import { MetadataRoute } from 'next';
 import { prisma } from "@/lib/prisma";
+import { locales } from '@/lib/i18n';
 
 /**
- * Generate a sitemap for the application
- * This will be served at /sitemap.xml
+ * Generate a sitemap for the application with locale variants
+ * Served at /sitemap.xml with hreflang support for /en and /ar
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.oxgenembabi.com';
-  
-  // Base URLs (static pages)
-  const staticPages = [
+
+  const staticRoutes = [
     '',
     '/products',
     '/categories',
@@ -20,46 +20,59 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/reviews',
     '/login',
     '/signup',
-  ].map(route => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: route === '' ? 1.0 : 0.8,
-  }));
+  ];
 
-  // Fetch all products
-  const products = await prisma.product.findMany({
-    select: {
-      slug: true,
-      updatedAt: true,
-    },
-    orderBy: {
-      updatedAt: 'desc',
-    },
-  });
+  // Generate static pages for each locale
+  const staticPages: MetadataRoute.Sitemap = [];
+  for (const route of staticRoutes) {
+    for (const locale of locales) {
+      const path = route ? `/${locale}${route}` : `/${locale}`;
+      staticPages.push({
+        url: `${baseUrl}${path}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: route === '' ? 1.0 : 0.8,
+      });
+    }
+  }
 
-  const productUrls = products.map(product => ({
-    url: `${baseUrl}/products/${product.slug}`,
-    lastModified: product.updatedAt,
-    changeFrequency: 'daily' as const,
-    priority: 0.9,
-  }));
+  let productUrls: MetadataRoute.Sitemap = [];
+  let categoryUrls: MetadataRoute.Sitemap = [];
 
-  // Fetch all categories
-  const categories = await prisma.category.findMany({
-    select: {
-      slug: true,
-      updatedAt: true,
-    },
-  });
+  try {
+    const products = await prisma.product.findMany({
+      select: { slug: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' },
+    });
 
-  const categoryUrls = categories.map(category => ({
-    url: `${baseUrl}/categories/${category.slug}`,
-    lastModified: category.updatedAt,
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }));
+    for (const product of products) {
+      for (const locale of locales) {
+        productUrls.push({
+          url: `${baseUrl}/${locale}/products/${product.slug}`,
+          lastModified: product.updatedAt,
+          changeFrequency: 'daily' as const,
+          priority: 0.9,
+        });
+      }
+    }
 
-  // Combine all URLs
+    const categories = await prisma.category.findMany({
+      select: { slug: true, updatedAt: true },
+    });
+
+    for (const category of categories) {
+      for (const locale of locales) {
+        categoryUrls.push({
+          url: `${baseUrl}/${locale}/categories/${category.slug}`,
+          lastModified: category.updatedAt,
+          changeFrequency: 'weekly' as const,
+          priority: 0.7,
+        });
+      }
+    }
+  } catch (e) {
+    console.warn('Sitemap: Could not fetch products/categories (e.g. DB unavailable during build)');
+  }
+
   return [...staticPages, ...productUrls, ...categoryUrls];
-} 
+}

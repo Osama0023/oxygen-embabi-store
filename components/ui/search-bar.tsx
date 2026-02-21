@@ -7,7 +7,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useTranslation } from "@/hooks/use-translation";
 import { TranslatedContent } from "@/components/ui/translated-content";
 import { StoreImage } from "@/components/ui/store-image";
-import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 import { translations } from "@/lib/translations";
 
 type SearchResult = {
@@ -175,7 +175,7 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
                 {activeTab === 'products' && (
                   <div className="space-y-2">
                     {results.products.map((product) => (
-                      <Link
+                      <LocaleLink
                         key={product.id}
                         href={`/products/${product.slug}`}
                         className="flex items-center p-3 hover:bg-orange-50 rounded-xl transition-colors"
@@ -200,7 +200,7 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
                             ${formatPrice(product.price)}
                           </p>
                         </div>
-                      </Link>
+                      </LocaleLink>
                     ))}
                   </div>
                 )}
@@ -208,7 +208,7 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
                 {activeTab === 'categories' && (
                   <div className="space-y-2">
                     {results.categories.map((category) => (
-                      <Link
+                      <LocaleLink
                         key={category.id}
                         href={`/categories/${category.slug}`}
                         className="flex items-center p-3 hover:bg-orange-50 rounded-xl transition-colors"
@@ -227,7 +227,7 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
                         <div className="ml-4">
                           <h4 className="text-base font-medium text-gray-900">{category.name}</h4>
                         </div>
-                      </Link>
+                      </LocaleLink>
                     ))}
                   </div>
                 )}

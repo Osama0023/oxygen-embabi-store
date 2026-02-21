@@ -1,25 +1,22 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import Cookies from 'js-cookie';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Globe } from 'lucide-react';
+import type { Locale } from '@/lib/i18n';
+import { locales } from '@/lib/i18n';
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  currentLocale: Locale;
+}
+
+export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
   const router = useRouter();
-  const [currentLang, setCurrentLang] = useState<'en' | 'ar'>('en');
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const savedLang = Cookies.get('lang') as 'en' | 'ar';
-    if (savedLang) {
-      setCurrentLang(savedLang);
-    }
-    setMounted(true);
-
-    // Add click outside listener
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -27,31 +24,26 @@ export function LanguageSwitcher() {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const toggleLanguage = (newLang: 'en' | 'ar') => {
-    if (currentLang === newLang) return;
-    
-    Cookies.set('lang', newLang, { expires: 365 });
-    setCurrentLang(newLang);
-    
-    // Update document direction
-    document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
-    
-    // Hard reload the page to apply changes
-    window.location.reload();
+  const switchLocale = (newLocale: Locale) => {
+    if (currentLocale === newLocale) return;
+    setIsOpen(false);
+
+    // pathname is like /en/products or /ar/categories/foo - replace locale segment
+    const segments = pathname.split('/').filter(Boolean);
+    const currentLocaleIndex = locales.indexOf(currentLocale);
+    if (currentLocaleIndex >= 0 && segments[0] === currentLocale) {
+      segments[0] = newLocale;
+    } else {
+      segments.unshift(newLocale);
+    }
+    const newPath = '/' + segments.join('/');
+    router.push(newPath);
   };
 
-  // Don't render anything until client-side hydration is complete
-  if (!mounted) {
-    return <div className="w-5 h-5"></div>;
-  }
-
-  // Determine dropdown position based on language
-  const dropdownPosition = currentLang === 'ar' ? 'left-0' : 'right-0';
+  const dropdownPosition = currentLocale === 'ar' ? 'left-0' : 'right-0';
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -61,27 +53,27 @@ export function LanguageSwitcher() {
         aria-label="Switch language"
       >
         <Globe className="w-5 h-5" />
-        <span className="text-sm font-medium">{currentLang.toUpperCase()}</span>
+        <span className="text-sm font-medium">{currentLocale.toUpperCase()}</span>
       </button>
-      
+
       {isOpen && (
         <div className={`absolute ${dropdownPosition} mt-2 w-32 bg-white rounded-md shadow-lg z-50`}>
           <div className="py-1">
             <button
-              onClick={() => toggleLanguage('en')}
+              onClick={() => switchLocale('en')}
               className={`block px-4 py-2 text-sm w-full text-left hover:text-black ${
-                currentLang === 'en' 
-                  ? 'bg-gray-100 font-medium text-black' 
+                currentLocale === 'en'
+                  ? 'bg-gray-100 font-medium text-black'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
               English
             </button>
             <button
-              onClick={() => toggleLanguage('ar')}
+              onClick={() => switchLocale('ar')}
               className={`block px-4 py-2 text-sm w-full text-left hover:text-black ${
-                currentLang === 'ar' 
-                  ? 'bg-gray-100 font-medium text-black' 
+                currentLocale === 'ar'
+                  ? 'bg-gray-100 font-medium text-black'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -92,4 +84,4 @@ export function LanguageSwitcher() {
       )}
     </div>
   );
-} 
+}

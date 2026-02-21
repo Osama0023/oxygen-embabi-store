@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+import { LocaleLink } from '@/components/locale-link';
 import { StoreImage } from '@/components/ui/store-image';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
@@ -118,7 +118,7 @@ export function MainCategoriesCarousel({ categories }: MainCategoriesCarouselPro
         }}
       >
         {categories.map((category, index) => (
-          <Link
+          <LocaleLink
             key={category.id}
             href={`/categories/${category.slug}`}
             className="group flex-shrink-0 w-[44vw] min-w-[140px] max-w-[200px] sm:w-[200px] sm:min-w-0 sm:max-w-none md:w-[220px] relative"
@@ -166,7 +166,7 @@ export function MainCategoriesCarousel({ categories }: MainCategoriesCarouselPro
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               </div>
             </div>
-          </Link>
+          </LocaleLink>
         ))}
       </div>
     </div>

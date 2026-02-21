@@ -2,7 +2,7 @@
 
 import { Product, Category, ProductVariant } from "@prisma/client";
 import { StoreImage } from "@/components/ui/store-image";
-import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { formatPrice } from "@/lib/utils";
@@ -130,12 +130,12 @@ export default function WishlistItems({ products }: WishlistItemsProps) {
 
           {/* Product Info */}
           <div className="p-4">
-            <Link 
-              href={`/product/${product.slug}`}
+            <LocaleLink 
+              href={`/products/${product.slug}`}
               className="text-lg font-semibold text-gray-900 hover:text-orange-600 transition-colors line-clamp-1"
             >
               {product.name}
-            </Link>
+            </LocaleLink>
             
             <div className="mt-2 flex items-center gap-2">
               <span className="text-orange-600 font-semibold">

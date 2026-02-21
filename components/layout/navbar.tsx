@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import { LocaleLink } from "@/components/locale-link";
 import { useSession, signOut } from "next-auth/react";
 import { 
   ShoppingCart, 
@@ -27,8 +28,13 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { TranslatedContent } from "@/components/ui/translated-content";
 import { useTranslation } from "@/hooks/use-translation";
 import { SearchBar } from "@/components/ui/search-bar";
+import type { Locale } from "@/lib/i18n";
 
-export function Navbar() {
+interface NavbarProps {
+  locale: Locale;
+}
+
+export function Navbar({ locale }: NavbarProps) {
   const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -126,19 +132,19 @@ export function Navbar() {
 
             {/* Right Side - Contact & Language */}
             <div className="flex items-center gap-3 mr-1 text-xs sm:text-sm">
-              <Link href="/contact" className="hover:text-orange-400 text-xs sm:text-sm whitespace-nowrap">
+              <LocaleLink href="/contact" className="hover:text-orange-400 text-xs sm:text-sm whitespace-nowrap">
                 <span className="hidden sm:inline"><TranslatedContent translationKey="navbar.contactUs" /></span>
                 <span className="sm:hidden flex items-center">
                   <Phone size={14} className="mr-1" />
                   <TranslatedContent translationKey="navbar.contactUs" />
                 </span>
-              </Link>
-              <Link href="/branches" className="flex items-center gap-1 hover:text-orange-400 text-xs sm:text-sm whitespace-nowrap">
+              </LocaleLink>
+              <LocaleLink href="/branches" className="flex items-center gap-1 hover:text-orange-400 text-xs sm:text-sm whitespace-nowrap">
                 <MapPin size={14} />
                 <span><TranslatedContent translationKey="navbar.ourBranches" /></span>
-              </Link>
+              </LocaleLink>
               <div className="hover:text-black transition-colors">
-                <LanguageSwitcher />
+                <LanguageSwitcher currentLocale={locale} />
               </div>
             </div>
           </div>
@@ -160,7 +166,7 @@ export function Navbar() {
 
             {/* Logo - Fixed width */}
             <div className="flex-1 md:w-[280px] md:flex-none">
-              <Link href="/" prefetch={false} className="flex items-center">
+              <LocaleLink href="/" prefetch={false} className="flex items-center">
                 <StoreImage
                   src="/logo.png"
                   alt="Embabi Logo"
@@ -169,44 +175,44 @@ export function Navbar() {
                   className="object-contain w-28 h-28 sm:w-[250px] sm:h-[250px] h-auto"
                   priority
                 />
-              </Link>
+              </LocaleLink>
             </div>
 
             {/* Desktop Navigation - Centered */}
             <div className="hidden md:flex flex-1 items-center justify-center gap-8">
-              <Link href="/products" prefetch={false} className="text-gray-700 hover:text-orange-600 text-base">
+              <LocaleLink href="/products" prefetch={false} className="text-gray-700 hover:text-orange-600 text-base">
                 <TranslatedContent translationKey="navbar.products" />
-              </Link>
-              <Link href="/categories" prefetch={false} className="text-gray-700 hover:text-orange-600 text-base">
+              </LocaleLink>
+              <LocaleLink href="/categories" prefetch={false} className="text-gray-700 hover:text-orange-600 text-base">
                 <TranslatedContent translationKey="navbar.categories" />
-              </Link>
-              <Link href="/deals" prefetch={false} className="flex items-center gap-2 text-gray-700 hover:text-orange-600 text-base">
+              </LocaleLink>
+              <LocaleLink href="/deals" prefetch={false} className="flex items-center gap-2 text-gray-700 hover:text-orange-600 text-base">
                 <span><TranslatedContent translationKey="navbar.deals" /></span>
                 <Flame size={18} className="text-red-500" />
-              </Link>
-              <Link href="/most-selling" prefetch={false} className="text-gray-700 hover:text-orange-600 text-base">
+              </LocaleLink>
+              <LocaleLink href="/most-selling" prefetch={false} className="text-gray-700 hover:text-orange-600 text-base">
                 <TranslatedContent translationKey="navbar.mostSelling" />
-              </Link>
+              </LocaleLink>
             </div>
 
             {/* Right Side Icons - Fixed width */}
             <div className="flex items-center justify-end gap-4 md:w-[280px] md:flex-none">
-              <Link href="/wishlist" prefetch={false} className="relative">
+              <LocaleLink href="/wishlist" prefetch={false} className="relative">
                 <Heart className="h-6 w-6 text-gray-700 hover:text-orange-600" />
                 {wishlistItems.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-rose-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {wishlistItems.length}
                   </span>
                 )}
-              </Link>
-              <Link href="/cart" prefetch={false} className="relative">
+              </LocaleLink>
+              <LocaleLink href="/cart" prefetch={false} className="relative">
                 <ShoppingCart className="h-6 w-6 text-gray-700 hover:text-orange-600" />
                 {items.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-orange-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {items.length}
                   </span>
                 )}
-              </Link>
+              </LocaleLink>
 
               {/* Profile Section */}
               <div className="relative" ref={profileDropdownRef}>
@@ -218,9 +224,9 @@ export function Navbar() {
                     <User className="h-6 w-6 text-gray-700 hover:text-orange-600" />
                   </button>
                 ) : (
-                  <Link href="/login" prefetch={false}>
+                  <LocaleLink href="/login" prefetch={false}>
                     <User className="h-6 w-6 text-gray-700 hover:text-orange-600" />
-                  </Link>
+                  </LocaleLink>
                 )}
                 {/* Profile Dropdown */}
                 {isProfileOpen && session && (
@@ -253,14 +259,14 @@ export function Navbar() {
                           Analytics
                         </Link>
                       )}
-                      <Link
+                      <LocaleLink
                         href="/profile"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-orange-50"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <UserCircle className="h-4 w-4 me-2" />
                         <TranslatedContent translationKey="navbar.profile" />
-                      </Link>
+                      </LocaleLink>
                       <button
                         onClick={() => {
                           signOut();
@@ -291,23 +297,23 @@ export function Navbar() {
           {isMenuOpen && (
             <div className="md:hidden border-t py-4">
               <div className="flex flex-col space-y-4">
-                <Link 
+                <LocaleLink 
                   href="/products" 
                   prefetch={false}
                   className="text-gray-700 hover:text-orange-600 text-base px-4"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <TranslatedContent translationKey="navbar.products" />
-                </Link>
-                <Link 
+                </LocaleLink>
+                <LocaleLink 
                   href="/categories" 
                   prefetch={false}
                   className="text-gray-700 hover:text-orange-600 text-base px-4"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <TranslatedContent translationKey="navbar.categories" />
-                </Link>
-                <Link 
+                </LocaleLink>
+                <LocaleLink 
                   href="/deals" 
                   prefetch={false}
                   className="flex items-center gap-2 text-gray-700 hover:text-orange-600 text-base px-4"
@@ -315,24 +321,24 @@ export function Navbar() {
                 >
                   <span><TranslatedContent translationKey="navbar.deals" /></span>
                   <Flame size={18} className="text-red-500" />
-                </Link>
-                <Link 
+                </LocaleLink>
+                <LocaleLink 
                   href="/most-selling" 
                   prefetch={false}
                   className="text-gray-700 hover:text-orange-600 text-base px-4"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <TranslatedContent translationKey="navbar.mostSelling" />
-                </Link>
+                </LocaleLink>
                 {!session && (
-                  <Link 
+                  <LocaleLink 
                     href="/login" 
                     prefetch={false}
                     className="text-gray-700 hover:text-orange-600 text-base px-4"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <TranslatedContent translationKey="common.signIn" />
-                  </Link>
+                  </LocaleLink>
                 )}
               </div>
             </div>
