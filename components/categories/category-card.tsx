@@ -124,6 +124,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
                 >
                   <LocaleLink
                     href={`/products/${product.slug}`}
+                    prefetch={false}
                     className="block group/product"
                   >
                     <div className="relative aspect-square rounded-md overflow-hidden">

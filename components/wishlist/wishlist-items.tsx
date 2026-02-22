@@ -132,6 +132,7 @@ export default function WishlistItems({ products }: WishlistItemsProps) {
           <div className="p-4">
             <LocaleLink 
               href={`/products/${product.slug}`}
+              prefetch={false}
               className="text-lg font-semibold text-gray-900 hover:text-orange-600 transition-colors line-clamp-1"
             >
               {product.name}

@@ -178,6 +178,7 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
                       <LocaleLink
                         key={product.id}
                         href={`/products/${product.slug}`}
+                        prefetch={false}
                         className="flex items-center p-3 hover:bg-orange-50 rounded-xl transition-colors"
                         onClick={() => setIsOpen(false)}
                       >

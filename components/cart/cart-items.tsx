@@ -156,7 +156,7 @@ export default function CartItems() {
                   {/* Product Details */}
                   <div className="flex-1">
                     <div className="flex justify-between">
-                      <LocaleLink href={`/products/${item.slug}`} className="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors">
+                      <LocaleLink href={`/products/${item.slug}`} prefetch={false} className="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors">
                         {item.name}
                       </LocaleLink>
                       <button

@@ -177,7 +177,7 @@ export default function WishlistPage() {
                       className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-gray-500 group-hover:text-red-500 dark:group-hover:text-red-400"
                     />
                   </button>
-                  <Link href={`/products/${item.slug}`} className="block">
+                  <Link href={`/products/${item.slug}`} prefetch={false} className="block">
                     <div className="relative aspect-square overflow-hidden">
                       {item.images[0] && (
                         <img

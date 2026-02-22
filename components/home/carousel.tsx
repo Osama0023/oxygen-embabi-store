@@ -188,6 +188,7 @@ export function HomeCarousel({ initialImages = [], initialThumbnails = [] }: Hom
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 lg:bottom-6">
                       <Link
                         href={image.linkUrl}
+                        prefetch={false}
                         className="inline-block px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-full shadow-lg transition-colors"
                       >
                         <TranslatedContent translationKey="home.buyNow" />
@@ -242,7 +243,7 @@ export function HomeCarousel({ initialImages = [], initialThumbnails = [] }: Hom
             .map((thumb) => (
               <div key={thumb.id} className="relative rounded-xl overflow-hidden shadow-md min-h-0">
                 {thumb.linkUrl ? (
-                  <Link href={thumb.linkUrl} className="block absolute inset-0">
+                  <Link href={thumb.linkUrl} prefetch={false} className="block absolute inset-0">
                     <StoreImage
                       src={thumb.url}
                       alt=""

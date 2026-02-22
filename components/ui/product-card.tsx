@@ -184,7 +184,7 @@ export function ProductCard({ product, showDescription = false }: ProductCardPro
       )}
       
       {product.images[0] && (
-        <Link href={`/products/${product.slug}`}>
+        <Link href={`/products/${product.slug}`} prefetch={false}>
           <div className="aspect-[4/3] relative">
             <StoreImage
               src={product.images[0]}
@@ -237,7 +237,7 @@ export function ProductCard({ product, showDescription = false }: ProductCardPro
       <div className="p-4">
         <div className="flex justify-between items-start gap-2 mb-2">
           <div className="flex-1 min-w-0">
-            <Link href={`/products/${product.slug}`}>
+            <Link href={`/products/${product.slug}`} prefetch={false}>
               <h3 className="font-semibold text-gray-900 hover:text-orange-600 transition-colors truncate">
                 {product.name}
               </h3>
