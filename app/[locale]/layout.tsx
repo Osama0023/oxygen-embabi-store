@@ -32,9 +32,11 @@ export const metadata: Metadata = {
   creator: "Oxgen Embabi Store",
   publisher: "Oxgen Embabi Store",
   icons: {
-    icon: "/app-icon.png",
-    shortcut: "/app-icon.png",
-    apple: "/app-icon.png",
+    // Served from Cloudinary CDN to reduce Vercel edge requests.
+    // Upload public/app-icon.png to Cloudinary folder "embabi-store/icons" as "app-icon"
+    icon: process.env.NEXT_PUBLIC_APP_ICON_URL || "/app-icon.png",
+    shortcut: process.env.NEXT_PUBLIC_APP_ICON_URL || "/app-icon.png",
+    apple: process.env.NEXT_PUBLIC_APP_ICON_URL || "/app-icon.png",
   },
   robots: {
     index: true,
