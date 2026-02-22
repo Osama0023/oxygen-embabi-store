@@ -133,7 +133,7 @@ export default function CheckoutPage({ user }: CheckoutPageProps) {
         },
         0
       );
-      const calculatedShipping = 300; // Fixed shipping cost
+      const calculatedShipping = user.role === 'ADMIN' ? 0 : 300; // No shipping for admins
       
       // Calculate discount if a coupon is applied
       let discountAmount = 0;

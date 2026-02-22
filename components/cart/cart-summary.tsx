@@ -18,7 +18,7 @@ export function CartSummary() {
     return total + (itemPrice * item.quantity);
   }, 0);
 
-  const shipping = 300; // Fixed shipping cost
+  const shipping = session?.user?.role === 'ADMIN' ? 0 : 300; // No shipping for admins
   const total = subtotal + shipping;
 
   const handleCheckout = (e) => {
