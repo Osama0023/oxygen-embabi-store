@@ -183,6 +183,7 @@ export function ProductCard({ product }: ProductCardProps) {
     <>
       <LocaleLink
         href={`/products/${product.slug}`}
+        prefetch={false}
         className="group bg-white rounded-lg overflow-hidden hover:shadow-md transition duration-300"
       >
         <div className="aspect-square relative group">
