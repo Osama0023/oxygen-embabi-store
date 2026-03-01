@@ -19,6 +19,10 @@ export const translations = {
       shipping: 'Shipping',
       continueShopping: 'Continue Shopping',
     },
+    maintenance: {
+      title: 'Oxygen Embabi is under maintenance',
+      defaultMessage: 'We are currently performing scheduled maintenance. Please check back soon.',
+    },
     navbar: {
       contactUs: 'Contact',
       ourBranches: 'Our Branches',
@@ -1003,6 +1007,10 @@ export const translations = {
       subtotal: 'المجموع',
       shipping: 'الشحن',
       continueShopping: 'مواصلة التسوق',
+    },
+    maintenance: {
+      title: 'Oxgen Embabi تحت الصيانة',
+      defaultMessage: 'نحن نقوم حاليًا بأعمال صيانة مجدولة. يرجى المحاولة مرة أخرى قريبًا.',
     },
     navbar: {
       contactUs: 'اتصل بنا',
