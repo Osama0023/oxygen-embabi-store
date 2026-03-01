@@ -3,8 +3,7 @@ import { Inter, Tajawal } from "next/font/google";
 import Script from "next/script";
 import "../globals.css";
 import { Providers } from "@/components/providers";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
+import { ConditionalLayout } from "@/components/layout/conditional-layout";
 import { Toaster } from "react-hot-toast";
 import { OrganizationStructuredData } from "@/components/seo/structured-data";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
@@ -83,12 +82,8 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       <body className={`${fontClass} min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}>
         <Providers locale={lang}>
           <PageViewTracker />
-          <div className="flex flex-col min-h-screen">
-            <Navbar locale={lang} />
-            <main className="flex-grow">{children}</main>
-            <Footer locale={lang} />
-            <Toaster position="bottom-right" />
-          </div>
+          <ConditionalLayout locale={lang}>{children}</ConditionalLayout>
+          <Toaster position="bottom-right" />
         </Providers>
         <OrganizationStructuredData />
         {process.env.NEXT_PUBLIC_META_PIXEL_ID && (

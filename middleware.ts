@@ -87,10 +87,31 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 2) Existing admin auth protection
+  // 2) Maintenance mode: redirect ALL traffic to maintenance page (no bypasses)
+  const segment = pathname.split("/")[1];
+  const localeSegment = isValidLocale(segment) ? segment : defaultLocale;
+  const isMaintenancePage = pathname === `/${localeSegment}/maintenance` || pathname.endsWith("/maintenance");
+
+  if (!isMaintenancePage) {
+    try {
+      const origin = request.nextUrl.origin;
+      const res = await fetch(`${origin}/api/settings/maintenance`, {
+        headers: { "Cache-Control": "no-store" },
+      });
+      const data = (await res.json()) as { maintenanceMode?: boolean };
+      if (data.maintenanceMode) {
+        return NextResponse.redirect(new URL(`/${localeSegment}/maintenance`, request.url));
+      }
+    } catch {
+      // Fail open: if we can't check, let users through
+    }
+  }
+
+  // 3) Existing admin auth protection
+  const secret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  const token = await getToken({ req: request, secret });
+
   if (pathname.startsWith("/admin")) {
-    const secret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
-    const token = await getToken({ req: request, secret });
     const path = pathname;
 
     // No auth at all → block any admin access
