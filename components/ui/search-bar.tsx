@@ -15,7 +15,7 @@ type SearchResult = {
     id: string;
     name: string;
     slug: string;
-    price: string;
+    price: string | null;
     images: string[];
     thumbnails: string[];
     category: {
@@ -43,7 +43,7 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
   const [results, setResults] = useState<SearchResult>({ products: [], categories: [] });
   const debouncedValue = useDebounce(value, 300);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { lang } = useTranslation();
+  const { t, lang } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -197,8 +197,8 @@ export function SearchBar({ isScrolled = false }: SearchBarProps) {
                           <p className="text-sm text-gray-500 truncate">
                             <TranslatedContent translationKey="navbar.searchInCategory" /> {product.category.name}
                           </p>
-                          <p className="text-base font-medium text-orange-600">
-                            ${formatPrice(product.price)}
+                          <p className={`text-base font-medium ${product.price == null ? 'text-gray-500' : 'text-orange-600'}`}>
+                            {product.price != null ? `EGP ${formatPrice(product.price)}` : t('products.outOfStock')}
                           </p>
                         </div>
                       </LocaleLink>
