@@ -11,6 +11,7 @@ import { TranslatedContent } from "@/components/ui/translated-content";
 import { getColorName } from "@/lib/colors";
 import { getCsrfHeaders } from "@/lib/csrf-client";
 import { trackOrderCompleted, getAttributionForOrder } from "@/lib/analytics";
+import { computeSuperPayVatEgp } from "@/lib/superpay-vat";
 
 // Egyptian governorates
 const EGYPTIAN_STATES = [
@@ -164,10 +165,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
   const minOrder = appliedCoupon?.minimumOrderAmount != null ? Number(appliedCoupon.minimumOrderAmount) : null;
   const meetsMinimumOrder = !minOrder || minOrder <= 0 || subtotal >= minOrder;
   const amountNeeded = minOrder != null && minOrder > 0 && subtotal < minOrder ? Math.ceil(minOrder - subtotal) : 0;
-  // SuperPay online payment fee (3.2%) applies when paying online (including store pickup)
-  const SUPERPAY_FEE_RATE = 0.032;
+  // SuperPay VAT: 1.25% + 2 EGP fixed when paying online (including store pickup)
   const superpayFee = (selectedPaymentMethod === 'online' || selectedPaymentMethod === 'online_store_pickup')
-    ? Math.round(totalWithDiscount * SUPERPAY_FEE_RATE) 
+    ? computeSuperPayVatEgp(totalWithDiscount)
     : 0;
   const onlineTotalWithFee = totalWithDiscount + superpayFee;
 
@@ -776,7 +776,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                 <>
                   <div className="flex justify-between text-blue-700">
                     <span>
-                      {lang === 'ar' ? 'ضريبة (3.2%)' : 'VAT (3.2%)'}
+                      {lang === 'ar' ? 'ضريبة (1.25% + 2 جنيه)' : 'VAT (1.25% + 2 EGP)'}
                     </span>
                     <span>EGP {superpayFee.toLocaleString()}</span>
                   </div>
