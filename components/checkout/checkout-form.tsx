@@ -161,12 +161,12 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
   const minOrder = appliedCoupon?.minimumOrderAmount != null ? Number(appliedCoupon.minimumOrderAmount) : null;
   const meetsMinimumOrder = !minOrder || minOrder <= 0 || subtotal >= minOrder;
   const amountNeeded = minOrder != null && minOrder > 0 && subtotal < minOrder ? Math.ceil(minOrder - subtotal) : 0;
-  // Paymob online payment fee (3.2%) applies when paying online (including store pickup)
-  const PAYMOB_FEE_RATE = 0.032;
-  const paymobFee = (selectedPaymentMethod === 'online' || selectedPaymentMethod === 'online_store_pickup')
-    ? Math.round(totalWithDiscount * PAYMOB_FEE_RATE) 
+  // SuperPay online payment fee (3.2%) applies when paying online (including store pickup)
+  const SUPERPAY_FEE_RATE = 0.032;
+  const superpayFee = (selectedPaymentMethod === 'online' || selectedPaymentMethod === 'online_store_pickup')
+    ? Math.round(totalWithDiscount * SUPERPAY_FEE_RATE) 
     : 0;
-  const onlineTotalWithFee = totalWithDiscount + paymobFee;
+  const onlineTotalWithFee = totalWithDiscount + superpayFee;
 
   const validateEgyptianPhone = (phone: string) => {
     // Egyptian phone number format: +20 1XX XXX XXXX
@@ -308,10 +308,10 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
       // Clear the cart after successful order
       clearCart();
       
-      // If user selected online payment, initiate Paymob intention
+      // If user selected online payment, initiate SuperPay payment
       if (selectedPaymentMethod === 'online' || selectedPaymentMethod === 'online_store_pickup') {
         try {
-          const paymobRes = await fetch('/api/paymob/intentions', {
+          const superpayRes = await fetch('/api/superpay/intentions', {
             method: 'POST',
             headers: {
               ...csrfHeaders,
@@ -319,34 +319,22 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             },
             body: JSON.stringify({
               orderId: id,
-              // Include Paymob service fee in intention amount (not part of order total)
               amount: onlineTotalWithFee,
               currency: 'EGP',
-              billingData: {
-                name: formData.name,
-                email: formData.email,
-                phone: formData.phone,
-              },
-              payment_methods: [5272644] // Backend will convert to integration ID
             })
           });
-          const paymobData = await paymobRes.json();
-          console.log('Paymob data:', paymobData);
-          const redirectUrl =
-            paymobData.unified_checkout_url ||
-            paymobData.payment_url ||
-            paymobData.iframe_url ||
-            null;
-          if (!paymobRes.ok || !redirectUrl) {
+          const superpayData = await superpayRes.json();
+          console.log('SuperPay data:', superpayData);
+          const redirectUrl = superpayData.payment_url || superpayData.url || null;
+          if (!superpayRes.ok || !redirectUrl) {
             throw new Error('Failed to initiate online payment');
           }
           toast.success(t('checkout.orderPlaced'));
           window.location.href = redirectUrl;
           return;
         } catch (e) {
-          console.error('Paymob initiation failed', e);
+          console.error('SuperPay initiation failed', e);
           toast.error(lang === 'ar' ? 'فشل في بدء الدفع الإلكتروني. يمكنك الدفع عند الاستلام.' : 'Failed to start online payment. You can pay on delivery.');
-          // Don't redirect to order page if payment initiation fails
           return;
         }
       }
@@ -781,7 +769,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                     <span>
                       {lang === 'ar' ? 'ضريبة (3.2%)' : 'VAT (3.2%)'}
                     </span>
-                    <span>EGP {paymobFee.toLocaleString()}</span>
+                    <span>EGP {superpayFee.toLocaleString()}</span>
                   </div>
                   <p className="text-xs text-gray-500 -mt-1">
                     {lang === 'ar' ? 'تطبق فقط عند الدفع أونلاين' : 'Applies only to online payments'}

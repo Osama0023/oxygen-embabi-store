@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
   async headers() {
     const imgSrc = ["'self'", "data:", "blob:", "https://res.cloudinary.com", "https://www.facebook.com", "https://www.google.com", "https://*.google.com", "https://*.googleapis.com"];
     const scriptSrc = ["'self'", "https://connect.facebook.net", "'unsafe-inline'"];
-    const frameSrc = ["'self'", "https://accept.paymob.com", "https://accept.paymobsolutions.com", "https://www.google.com"];
-    const connectSrc = ["'self'", "https://accept.paymobsolutions.com", "https://www.facebook.com"];
+    const frameSrc = ["'self'", "https://accept.paymob.com", "https://accept.paymobsolutions.com", "https://merchant.super-pay.com", "https://www.google.com"];
+    const connectSrc = ["'self'", "https://accept.paymobsolutions.com", "https://merchant.super-pay.com", "https://www.facebook.com"];
     const cspParts = [
       "default-src 'self'",
       `script-src ${scriptSrc.join(" ")}`,

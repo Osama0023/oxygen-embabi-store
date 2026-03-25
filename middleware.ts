@@ -47,6 +47,7 @@ export async function middleware(request: NextRequest) {
   if (
     request.method === "GET" &&
     !pathname.startsWith("/api/paymob/webhooks") &&
+    !pathname.startsWith("/api/superpay/webhooks") &&
     !pathname.startsWith("/api/auth")
   ) {
     const ua = request.headers.get("user-agent") || "";
