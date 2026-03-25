@@ -42,25 +42,26 @@ export async function POST(request: Request) {
 
     console.log("Starting order creation process...");
     
-    // Check if the site is in maintenance mode
     console.log("Checking maintenance mode status...");
     const siteSettings = await prisma.siteSettings.findUnique({
       where: { id: "site-settings" }
     });
 
-    if (siteSettings?.maintenanceMode) {
-      console.log("Site is in maintenance mode. Blocking order creation.");
-      return NextResponse.json({ 
-        error: siteSettings.maintenanceMessage || 'Site is currently under maintenance. Please try again later.'
-      }, { status: 503 });
-    }
-    
     const session = await getServerSession(authOptions);
     console.log("Session retrieved:", session ? "Valid" : "Invalid");
 
+    if (siteSettings?.maintenanceMode && session?.user?.role !== "ADMIN") {
+      console.log("Site is in maintenance mode. Blocking order creation (non-admin).");
+      return NextResponse.json({
+        error:
+          siteSettings.maintenanceMessage ||
+          "Site is currently under maintenance. Please try again later.",
+      }, { status: 503 });
+    }
+
     if (!session || !session.user.id) {
       console.log("Unauthorized access attempt - no valid session");
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     console.log("User ID:", session.user.id);
@@ -169,35 +170,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid total amount' }, { status: 400 });
     }
 
-    // If maintenance mode is enabled, optionally block only specific payment methods
-    if (siteSettings?.maintenanceMode) {
-      const disabled = siteSettings.disabledPaymentMethods || [];
-      // Map client paymentMethod strings to DB enum values
-      const selectedPaymentEnum =
-        paymentMethod === 'cash'
-          ? 'CASH'
-          : paymentMethod === 'online'
-          ? 'ONLINE'
-          : paymentMethod === 'cash_store_pickup'
-          ? 'CASH_STORE_PICKUP'
-          : paymentMethod === 'online_store_pickup'
-          ? 'ONLINE_STORE_PICKUP'
-          : null;
-
-      if (selectedPaymentEnum && disabled.includes(selectedPaymentEnum as any)) {
-        console.log(
-          `Payment method ${selectedPaymentEnum} is disabled in maintenance mode. Blocking order creation.`
-        );
-        return NextResponse.json(
-          {
-            error:
-              siteSettings.maintenanceMessage ||
-              'This payment method is temporarily disabled. Please choose another method.',
-          },
-          { status: 503 }
-        );
-      }
-    }
+    // During maintenance, only ADMIN users reach this point; they are not restricted by disabledPaymentMethods.
 
     // Validate coupon minimum order when coupon is applied
     if (couponData?.id) {

@@ -88,7 +88,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 2) Maintenance mode: redirect ALL traffic to maintenance page (no bypasses)
+  const secret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+  const token = await getToken({ req: request, secret });
+
+  // 2) Maintenance mode: redirect to maintenance page (ADMIN may browse and checkout)
   const segment = pathname.split("/")[1];
   const localeSegment = isValidLocale(segment) ? segment : defaultLocale;
   const isMaintenancePage = pathname === `/${localeSegment}/maintenance` || pathname.endsWith("/maintenance");
@@ -100,7 +103,7 @@ export async function middleware(request: NextRequest) {
         headers: { "Cache-Control": "no-store" },
       });
       const data = (await res.json()) as { maintenanceMode?: boolean };
-      if (data.maintenanceMode) {
+      if (data.maintenanceMode && token?.role !== "ADMIN") {
         return NextResponse.redirect(new URL(`/${localeSegment}/maintenance`, request.url));
       }
     } catch {
@@ -109,8 +112,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // 3) Existing admin auth protection
-  const secret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
-  const token = await getToken({ req: request, secret });
 
   if (pathname.startsWith("/admin")) {
     const path = pathname;

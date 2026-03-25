@@ -49,6 +49,7 @@ interface CheckoutFormProps {
   user: {
     name: string | null;
     email: string;
+    role: string;
   };
   appliedCoupon?: Coupon | null;
   items: {
@@ -119,6 +120,8 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
   const [discountAmount, setDiscountAmount] = useState(0);
   const couponFetchComplete = true; // Coupon comes from parent now
   const { isMaintenanceMode, maintenanceMessage, disabledPaymentMethods } = useMaintenance();
+  const isAdmin = user.role === "ADMIN";
+  const effectiveDisabledPaymentMethods = isAdmin ? [] : disabledPaymentMethods;
 
   // Disable body scroll and interactions while loading
   useEffect(() => {
@@ -189,8 +192,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if maintenance mode is enabled
-    if (isMaintenanceMode) {
+    if (isMaintenanceMode && !isAdmin) {
       toast.error(maintenanceMessage || 'Site is currently under maintenance. Please try again later.');
       return;
     }
@@ -379,6 +381,13 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
               <p className="text-sm text-red-700">
                 <span className="font-medium">Alert:</span> {maintenanceMessage || 'Site is currently under maintenance. Please try again later.'}
               </p>
+              {isAdmin && (
+                <p className="text-sm text-blue-800 mt-2">
+                  {lang === 'ar'
+                    ? 'حساب المسؤول: يمكنك متابعة الطلب والدفع.'
+                    : 'Admin account: you can continue checkout and place orders.'}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -509,9 +518,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <div
               className={`border-2 rounded-lg p-4 cursor-pointer ${
                 selectedPaymentMethod === 'cash' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'
-              } ${disabledPaymentMethods.includes('CASH') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              } ${effectiveDisabledPaymentMethods.includes('CASH') ? 'opacity-60 cursor-not-allowed' : ''}`}
               onClick={() => {
-                if (disabledPaymentMethods.includes('CASH')) return;
+                if (effectiveDisabledPaymentMethods.includes('CASH')) return;
                 setSelectedPaymentMethod('cash');
               }}
             >
@@ -521,7 +530,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                   <TranslatedContent translationKey="checkout.cashOnDelivery" />
                 </span>
                 <div className="ml-auto flex items-center gap-2">
-                  {disabledPaymentMethods.includes('CASH') && (
+                  {effectiveDisabledPaymentMethods.includes('CASH') && (
                     <span className="text-xs text-red-600">
                       {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
                     </span>
@@ -537,9 +546,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <div
               className={`border-2 rounded-lg p-4 cursor-pointer ${
                 selectedPaymentMethod === 'online' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
-              } ${disabledPaymentMethods.includes('ONLINE') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              } ${effectiveDisabledPaymentMethods.includes('ONLINE') ? 'opacity-60 cursor-not-allowed' : ''}`}
               onClick={() => {
-                if (disabledPaymentMethods.includes('ONLINE')) return;
+                if (effectiveDisabledPaymentMethods.includes('ONLINE')) return;
                 setSelectedPaymentMethod('online');
               }}
             >
@@ -549,7 +558,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                   {lang === 'ar' ? 'الدفع أونلاين' : 'Pay Online'}
                 </span>
                 <div className="ml-auto flex items-center gap-2">
-                  {disabledPaymentMethods.includes('ONLINE') && (
+                  {effectiveDisabledPaymentMethods.includes('ONLINE') && (
                     <span className="text-xs text-red-600">
                       {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
                     </span>
@@ -565,9 +574,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <div
               className={`border-2 rounded-lg p-4 cursor-pointer ${
                 selectedPaymentMethod === 'cash_store_pickup' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white'
-              } ${disabledPaymentMethods.includes('CASH_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              } ${effectiveDisabledPaymentMethods.includes('CASH_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
               onClick={() => {
-                if (disabledPaymentMethods.includes('CASH_STORE_PICKUP')) return;
+                if (effectiveDisabledPaymentMethods.includes('CASH_STORE_PICKUP')) return;
                 setSelectedPaymentMethod('cash_store_pickup');
               }}
             >
@@ -582,7 +591,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                   </p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                  {disabledPaymentMethods.includes('CASH_STORE_PICKUP') && (
+                  {effectiveDisabledPaymentMethods.includes('CASH_STORE_PICKUP') && (
                     <span className="text-xs text-red-600">
                       {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
                     </span>
@@ -598,9 +607,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <div
               className={`border-2 rounded-lg p-4 cursor-pointer ${
                 selectedPaymentMethod === 'online_store_pickup' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 bg-white'
-              } ${disabledPaymentMethods.includes('ONLINE_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              } ${effectiveDisabledPaymentMethods.includes('ONLINE_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
               onClick={() => {
-                if (disabledPaymentMethods.includes('ONLINE_STORE_PICKUP')) return;
+                if (effectiveDisabledPaymentMethods.includes('ONLINE_STORE_PICKUP')) return;
                 setSelectedPaymentMethod('online_store_pickup');
               }}
             >
@@ -615,7 +624,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                   </p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                  {disabledPaymentMethods.includes('ONLINE_STORE_PICKUP') && (
+                  {effectiveDisabledPaymentMethods.includes('ONLINE_STORE_PICKUP') && (
                     <span className="text-xs text-red-600">
                       {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
                     </span>
@@ -789,7 +798,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <button
               type="submit"
               form="checkout-form"
-              disabled={!couponFetchComplete || isLoading || isMaintenanceMode || (!meetsMinimumOrder && !!appliedCoupon)}
+              disabled={!couponFetchComplete || isLoading || (isMaintenanceMode && !isAdmin) || (!meetsMinimumOrder && !!appliedCoupon)}
               className="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {!couponFetchComplete ? (
