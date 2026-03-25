@@ -49,6 +49,7 @@ interface CheckoutFormProps {
   user: {
     name: string | null;
     email: string;
+    role: string;
   };
   appliedCoupon?: Coupon | null;
   items: {
@@ -119,6 +120,8 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
   const [discountAmount, setDiscountAmount] = useState(0);
   const couponFetchComplete = true; // Coupon comes from parent now
   const { isMaintenanceMode, maintenanceMessage, disabledPaymentMethods } = useMaintenance();
+  const isAdmin = user.role === "ADMIN";
+  const effectiveDisabledPaymentMethods = isAdmin ? [] : disabledPaymentMethods;
 
   // Disable body scroll and interactions while loading
   useEffect(() => {
@@ -161,12 +164,12 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
   const minOrder = appliedCoupon?.minimumOrderAmount != null ? Number(appliedCoupon.minimumOrderAmount) : null;
   const meetsMinimumOrder = !minOrder || minOrder <= 0 || subtotal >= minOrder;
   const amountNeeded = minOrder != null && minOrder > 0 && subtotal < minOrder ? Math.ceil(minOrder - subtotal) : 0;
-  // Paymob online payment fee (3.2%) applies when paying online (including store pickup)
-  const PAYMOB_FEE_RATE = 0.032;
-  const paymobFee = (selectedPaymentMethod === 'online' || selectedPaymentMethod === 'online_store_pickup')
-    ? Math.round(totalWithDiscount * PAYMOB_FEE_RATE) 
+  // SuperPay online payment fee (3.2%) applies when paying online (including store pickup)
+  const SUPERPAY_FEE_RATE = 0.032;
+  const superpayFee = (selectedPaymentMethod === 'online' || selectedPaymentMethod === 'online_store_pickup')
+    ? Math.round(totalWithDiscount * SUPERPAY_FEE_RATE) 
     : 0;
-  const onlineTotalWithFee = totalWithDiscount + paymobFee;
+  const onlineTotalWithFee = totalWithDiscount + superpayFee;
 
   const validateEgyptianPhone = (phone: string) => {
     // Egyptian phone number format: +20 1XX XXX XXXX
@@ -189,8 +192,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if maintenance mode is enabled
-    if (isMaintenanceMode) {
+    if (isMaintenanceMode && !isAdmin) {
       toast.error(maintenanceMessage || 'Site is currently under maintenance. Please try again later.');
       return;
     }
@@ -308,10 +310,10 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
       // Clear the cart after successful order
       clearCart();
       
-      // If user selected online payment, initiate Paymob intention
+      // If user selected online payment, initiate SuperPay payment
       if (selectedPaymentMethod === 'online' || selectedPaymentMethod === 'online_store_pickup') {
         try {
-          const paymobRes = await fetch('/api/paymob/intentions', {
+          const superpayRes = await fetch('/api/superpay/intentions', {
             method: 'POST',
             headers: {
               ...csrfHeaders,
@@ -319,34 +321,22 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             },
             body: JSON.stringify({
               orderId: id,
-              // Include Paymob service fee in intention amount (not part of order total)
               amount: onlineTotalWithFee,
               currency: 'EGP',
-              billingData: {
-                name: formData.name,
-                email: formData.email,
-                phone: formData.phone,
-              },
-              payment_methods: [5272644] // Backend will convert to integration ID
             })
           });
-          const paymobData = await paymobRes.json();
-          console.log('Paymob data:', paymobData);
-          const redirectUrl =
-            paymobData.unified_checkout_url ||
-            paymobData.payment_url ||
-            paymobData.iframe_url ||
-            null;
-          if (!paymobRes.ok || !redirectUrl) {
+          const superpayData = await superpayRes.json();
+          console.log('SuperPay data:', superpayData);
+          const redirectUrl = superpayData.payment_url || superpayData.url || null;
+          if (!superpayRes.ok || !redirectUrl) {
             throw new Error('Failed to initiate online payment');
           }
           toast.success(t('checkout.orderPlaced'));
           window.location.href = redirectUrl;
           return;
         } catch (e) {
-          console.error('Paymob initiation failed', e);
+          console.error('SuperPay initiation failed', e);
           toast.error(lang === 'ar' ? 'فشل في بدء الدفع الإلكتروني. يمكنك الدفع عند الاستلام.' : 'Failed to start online payment. You can pay on delivery.');
-          // Don't redirect to order page if payment initiation fails
           return;
         }
       }
@@ -391,6 +381,13 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
               <p className="text-sm text-red-700">
                 <span className="font-medium">Alert:</span> {maintenanceMessage || 'Site is currently under maintenance. Please try again later.'}
               </p>
+              {isAdmin && (
+                <p className="text-sm text-blue-800 mt-2">
+                  {lang === 'ar'
+                    ? 'حساب المسؤول: يمكنك متابعة الطلب والدفع.'
+                    : 'Admin account: you can continue checkout and place orders.'}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -521,9 +518,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <div
               className={`border-2 rounded-lg p-4 cursor-pointer ${
                 selectedPaymentMethod === 'cash' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'
-              } ${disabledPaymentMethods.includes('CASH') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              } ${effectiveDisabledPaymentMethods.includes('CASH') ? 'opacity-60 cursor-not-allowed' : ''}`}
               onClick={() => {
-                if (disabledPaymentMethods.includes('CASH')) return;
+                if (effectiveDisabledPaymentMethods.includes('CASH')) return;
                 setSelectedPaymentMethod('cash');
               }}
             >
@@ -533,7 +530,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                   <TranslatedContent translationKey="checkout.cashOnDelivery" />
                 </span>
                 <div className="ml-auto flex items-center gap-2">
-                  {disabledPaymentMethods.includes('CASH') && (
+                  {effectiveDisabledPaymentMethods.includes('CASH') && (
                     <span className="text-xs text-red-600">
                       {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
                     </span>
@@ -549,9 +546,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <div
               className={`border-2 rounded-lg p-4 cursor-pointer ${
                 selectedPaymentMethod === 'online' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
-              } ${disabledPaymentMethods.includes('ONLINE') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              } ${effectiveDisabledPaymentMethods.includes('ONLINE') ? 'opacity-60 cursor-not-allowed' : ''}`}
               onClick={() => {
-                if (disabledPaymentMethods.includes('ONLINE')) return;
+                if (effectiveDisabledPaymentMethods.includes('ONLINE')) return;
                 setSelectedPaymentMethod('online');
               }}
             >
@@ -561,7 +558,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                   {lang === 'ar' ? 'الدفع أونلاين' : 'Pay Online'}
                 </span>
                 <div className="ml-auto flex items-center gap-2">
-                  {disabledPaymentMethods.includes('ONLINE') && (
+                  {effectiveDisabledPaymentMethods.includes('ONLINE') && (
                     <span className="text-xs text-red-600">
                       {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
                     </span>
@@ -577,9 +574,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <div
               className={`border-2 rounded-lg p-4 cursor-pointer ${
                 selectedPaymentMethod === 'cash_store_pickup' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white'
-              } ${disabledPaymentMethods.includes('CASH_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              } ${effectiveDisabledPaymentMethods.includes('CASH_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
               onClick={() => {
-                if (disabledPaymentMethods.includes('CASH_STORE_PICKUP')) return;
+                if (effectiveDisabledPaymentMethods.includes('CASH_STORE_PICKUP')) return;
                 setSelectedPaymentMethod('cash_store_pickup');
               }}
             >
@@ -594,7 +591,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                   </p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                  {disabledPaymentMethods.includes('CASH_STORE_PICKUP') && (
+                  {effectiveDisabledPaymentMethods.includes('CASH_STORE_PICKUP') && (
                     <span className="text-xs text-red-600">
                       {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
                     </span>
@@ -610,9 +607,9 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <div
               className={`border-2 rounded-lg p-4 cursor-pointer ${
                 selectedPaymentMethod === 'online_store_pickup' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 bg-white'
-              } ${disabledPaymentMethods.includes('ONLINE_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
+              } ${effectiveDisabledPaymentMethods.includes('ONLINE_STORE_PICKUP') ? 'opacity-60 cursor-not-allowed' : ''}`}
               onClick={() => {
-                if (disabledPaymentMethods.includes('ONLINE_STORE_PICKUP')) return;
+                if (effectiveDisabledPaymentMethods.includes('ONLINE_STORE_PICKUP')) return;
                 setSelectedPaymentMethod('online_store_pickup');
               }}
             >
@@ -627,7 +624,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                   </p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
-                  {disabledPaymentMethods.includes('ONLINE_STORE_PICKUP') && (
+                  {effectiveDisabledPaymentMethods.includes('ONLINE_STORE_PICKUP') && (
                     <span className="text-xs text-red-600">
                       {lang === 'ar' ? 'غير متاح حالياً' : 'Temporarily disabled'}
                     </span>
@@ -781,7 +778,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                     <span>
                       {lang === 'ar' ? 'ضريبة (3.2%)' : 'VAT (3.2%)'}
                     </span>
-                    <span>EGP {paymobFee.toLocaleString()}</span>
+                    <span>EGP {superpayFee.toLocaleString()}</span>
                   </div>
                   <p className="text-xs text-gray-500 -mt-1">
                     {lang === 'ar' ? 'تطبق فقط عند الدفع أونلاين' : 'Applies only to online payments'}
@@ -801,7 +798,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <button
               type="submit"
               form="checkout-form"
-              disabled={!couponFetchComplete || isLoading || isMaintenanceMode || (!meetsMinimumOrder && !!appliedCoupon)}
+              disabled={!couponFetchComplete || isLoading || (isMaintenanceMode && !isAdmin) || (!meetsMinimumOrder && !!appliedCoupon)}
               className="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {!couponFetchComplete ? (
