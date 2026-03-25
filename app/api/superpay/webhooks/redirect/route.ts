@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   mapSuperPayFlatRedirectStatus,
-  mapSuperPayRedirectOrderStatus,
+  mapSuperPayRedirectPayload,
   type SuperPayRedirectOutcome,
 } from "@/lib/superpay";
 
@@ -20,6 +20,7 @@ function parseSuperPayRedirect(searchParams: URLSearchParams): {
     try {
       const json = Buffer.from(encoded, "base64").toString("utf8");
       const data = JSON.parse(json) as {
+        status?: string;
         merchantOrderId?: string;
         orderStatus?: string;
       };
@@ -27,7 +28,7 @@ function parseSuperPayRedirect(searchParams: URLSearchParams): {
       if (merchantOrderId) {
         return {
           merchantOrderId,
-          outcome: mapSuperPayRedirectOrderStatus(data.orderStatus),
+          outcome: mapSuperPayRedirectPayload(data),
         };
       }
     } catch (e) {
@@ -41,6 +42,15 @@ function parseSuperPayRedirect(searchParams: URLSearchParams): {
     flat.orderId ||
     flat.order_id ||
     "";
+  if (merchantOrderId) {
+    return {
+      merchantOrderId,
+      outcome: mapSuperPayRedirectPayload({
+        status: flat.status,
+        orderStatus: flat.orderStatus || flat.order_status,
+      }),
+    };
+  }
   const rawStatus =
     flat.status || flat.paymentStatus || flat.payment_status || "";
   const outcome = mapSuperPayFlatRedirectStatus(rawStatus);

@@ -50,6 +50,13 @@ export function mapSuperPayRedirectOrderStatus(
   }
 
   if (
+    s === "INIAITE_AUTHORIZE"
+  ) {
+    // SuperPay typo seen on failure webhooks alongside status: FAILURE
+    return "failed";
+  }
+
+  if (
     s === "PAY_FAILED" ||
     s === "FAILED" ||
     s === "FAILURE" ||
@@ -80,6 +87,33 @@ export function mapSuperPayRedirectOrderStatus(
   }
 
   return "pending";
+}
+
+/**
+ * Full redirect `params` JSON (base64-decoded). SuperPay may send both `status`
+ * (e.g. FAILURE) and `orderStatus` (e.g. INIAITE_AUTHORIZE typo) — the top-level
+ * `status` field must win over `orderStatus`.
+ */
+export function mapSuperPayRedirectPayload(data: {
+  status?: string;
+  orderStatus?: string;
+}): SuperPayRedirectOutcome {
+  const top = (data.status || "").trim().toUpperCase();
+  if (top === "FAILURE" || top === "FAILED" || top === "ERROR") {
+    return "failed";
+  }
+  if (
+    top === "SUCCESS" ||
+    top === "OK" ||
+    top === "COMPLETED" ||
+    top === "SUCCEEDED"
+  ) {
+    return "success";
+  }
+  if (top === "PENDING" || top === "PROCESSING") {
+    return "pending";
+  }
+  return mapSuperPayRedirectOrderStatus(data.orderStatus);
 }
 
 /** Flat query `status` / `paymentStatus` (non-base64 redirect). */
