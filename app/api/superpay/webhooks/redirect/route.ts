@@ -1,4 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  mapSuperPayFlatRedirectStatus,
+  mapSuperPayRedirectOrderStatus,
+  type SuperPayRedirectOutcome,
+} from "@/lib/superpay";
+
+/**
+ * SuperPay often returns a single `params` query arg: base64-encoded JSON with
+ * merchantOrderId, orderStatus (e.g. PAY_COMPLETED), signature, etc.
+ */
+function parseSuperPayRedirect(searchParams: URLSearchParams): {
+  merchantOrderId: string;
+  outcome: SuperPayRedirectOutcome;
+} {
+  const flat = Object.fromEntries(searchParams.entries());
+
+  const encoded = flat.params;
+  if (encoded && typeof encoded === "string") {
+    try {
+      const json = Buffer.from(encoded, "base64").toString("utf8");
+      const data = JSON.parse(json) as {
+        merchantOrderId?: string;
+        orderStatus?: string;
+      };
+      const merchantOrderId = data.merchantOrderId || "";
+      if (merchantOrderId) {
+        return {
+          merchantOrderId,
+          outcome: mapSuperPayRedirectOrderStatus(data.orderStatus),
+        };
+      }
+    } catch (e) {
+      console.error("SuperPay redirect: failed to decode params blob", e);
+    }
+  }
+
+  const merchantOrderId =
+    flat.merchantOrderId ||
+    flat.merchant_order_id ||
+    flat.orderId ||
+    flat.order_id ||
+    "";
+  const rawStatus =
+    flat.status || flat.paymentStatus || flat.payment_status || "";
+  const outcome = mapSuperPayFlatRedirectStatus(rawStatus);
+
+  return { merchantOrderId, outcome };
+}
+
+function orderPathQuery(outcome: SuperPayRedirectOutcome): string {
+  if (outcome === "success") return "";
+  if (outcome === "failed") return "?payment=failed";
+  return "?payment=pending";
+}
 
 /**
  * SuperPay user redirect handler (redirectionURL).
@@ -12,10 +66,7 @@ export async function GET(req: NextRequest) {
     const params = Object.fromEntries(url.searchParams.entries());
     console.log("📦 Redirect params:", JSON.stringify(params));
 
-    const merchantOrderId =
-      params.merchantOrderId || params.merchant_order_id || params.orderId || params.order_id || "";
-    const status =
-      (params.status || params.paymentStatus || params.payment_status || "").toLowerCase();
+    const { merchantOrderId, outcome } = parseSuperPayRedirect(url.searchParams);
 
     const xfProto = req.headers.get("x-forwarded-proto");
     const xfHost = req.headers.get("x-forwarded-host");
@@ -26,16 +77,15 @@ export async function GET(req: NextRequest) {
     const publicBase = process.env.NEXT_PUBLIC_APP_URL;
     const baseUrl = publicBase && /localhost/.test(origin) ? publicBase : origin;
 
-    const isSuccess =
-      status === "success" || status === "successful" || status === "completed" || status === "paid";
-
     if (merchantOrderId) {
       const orderPath = `/orders/${merchantOrderId}`;
-      const query = isSuccess ? "" : "?payment=failed";
+      const query = orderPathQuery(outcome);
       return NextResponse.redirect(`${baseUrl}${orderPath}${query}`);
     }
 
-    return NextResponse.redirect(`${baseUrl}/payment/result?status=${isSuccess ? "success" : "failed"}`);
+    return NextResponse.redirect(
+      `${baseUrl}/payment/result?status=${outcome}`
+    );
   } catch (error) {
     console.error("SuperPay redirect error", error);
     const publicBase = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

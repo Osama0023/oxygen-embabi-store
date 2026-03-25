@@ -24,3 +24,82 @@ export function buildSuperPayHeaders(): Record<string, string> {
     Accept: "application/json",
   };
 }
+
+/** Browser redirect outcome after SuperPay checkout (from `params` JSON or flat query). */
+export type SuperPayRedirectOutcome = "success" | "failed" | "pending";
+
+/**
+ * Map SuperPay `orderStatus` in the redirect payload to how we should treat the return URL.
+ * Unknown values default to `pending` so we do not show a false "payment failed" message.
+ */
+export function mapSuperPayRedirectOrderStatus(
+  orderStatus: string | undefined
+): SuperPayRedirectOutcome {
+  const s = (orderStatus || "").trim().toUpperCase();
+  if (!s) return "pending";
+
+  if (
+    s === "PAY_COMPLETED" ||
+    s === "SUCCESS" ||
+    s === "COMPLETED" ||
+    s === "PAID" ||
+    s === "CAPTURED" ||
+    s === "SETTLED"
+  ) {
+    return "success";
+  }
+
+  if (
+    s === "PAY_FAILED" ||
+    s === "FAILED" ||
+    s === "FAILURE" ||
+    s === "CANCELLED" ||
+    s === "CANCELED" ||
+    s === "DECLINED" ||
+    s === "REJECTED" ||
+    s === "EXPIRED" ||
+    s === "VOIDED" ||
+    s === "PAY_CANCELLED" ||
+    s === "PAYMENT_FAILED"
+  ) {
+    return "failed";
+  }
+
+  if (
+    s === "PAY_PENDING" ||
+    s === "PENDING" ||
+    s === "PROCESSING" ||
+    s === "AUTHORIZED" ||
+    s === "AUTH" ||
+    s === "IN_PROGRESS" ||
+    s === "INITIATED" ||
+    s === "CREATED" ||
+    s === "AWAITING_PAYMENT"
+  ) {
+    return "pending";
+  }
+
+  return "pending";
+}
+
+/** Flat query `status` / `paymentStatus` (non-base64 redirect). */
+export function mapSuperPayFlatRedirectStatus(status: string): SuperPayRedirectOutcome {
+  const s = status.trim().toLowerCase();
+  if (!s) return "pending";
+  if (
+    ["success", "successful", "completed", "paid", "capture", "captured", "settled"].includes(s)
+  ) {
+    return "success";
+  }
+  if (
+    ["failed", "failure", "cancelled", "canceled", "declined", "rejected", "error", "expired"].includes(
+      s
+    )
+  ) {
+    return "failed";
+  }
+  if (["pending", "processing", "authorized", "in_progress", "initiated", "awaiting"].includes(s)) {
+    return "pending";
+  }
+  return "pending";
+}

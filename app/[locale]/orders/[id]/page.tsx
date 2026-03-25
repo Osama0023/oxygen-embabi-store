@@ -96,9 +96,10 @@ export default async function OrderPage({
   const isRTL = lang === 'ar';
 
   const { payment } = await searchParams;
-  
-  // Check if this is a failed payment redirect
-  const isFailedPayment = payment === 'failed';
+
+  /** SuperPay redirect: ?payment=failed | ?payment=pending */
+  const isFailedPayment = payment === "failed";
+  const isPendingPaymentRedirect = payment === "pending";
   const order = await prisma.order.findUnique({
     where: { id },
     include: {
@@ -177,7 +178,13 @@ export default async function OrderPage({
                       {lang === 'ar' ? 'في انتظار الدفع' : 'Payment Pending'}
                     </p>
                     <p className="text-sm text-yellow-600">
-                      {lang === 'ar' ? 'جاري معالجة الدفع، يرجى الانتظار' : 'Payment is being processed, please wait'}
+                      {isPendingPaymentRedirect
+                        ? lang === 'ar'
+                          ? 'عدت من صفحة الدفع؛ قد يستغرق تأكيد البنك لحظات. حدّث الصفحة إذا لزم.'
+                          : 'You returned from checkout; bank confirmation can take a moment. Refresh if needed.'
+                        : lang === 'ar'
+                          ? 'جاري معالجة الدفع، يرجى الانتظار'
+                          : 'Payment is being processed, please wait'}
                     </p>
                   </div>
                 </>
