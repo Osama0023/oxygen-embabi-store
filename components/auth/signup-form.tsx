@@ -89,7 +89,7 @@ export function SignUpForm() {
       toast.success(t('auth.accountCreated'));
       
       // Redirect to verification page with email and fromCart parameter if needed
-      let verifyRoute = `/verify?email=${encodeURIComponent(formData.email)}`;
+      let verifyRoute = `/${lang}/verify?email=${encodeURIComponent(formData.email)}`;
       
       if (returnUrl !== '/') {
         verifyRoute += `&returnUrl=${encodeURIComponent(returnUrl)}`;
@@ -297,7 +297,7 @@ export function SignUpForm() {
       <p className="text-center text-sm text-gray-600 mt-4">
         <TranslatedContent translationKey="auth.alreadyHaveAccount" />{" "}
         <Link 
-          href={`/login${returnUrl !== '/' ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}${fromCart ? `${returnUrl !== '/' ? '&' : '?'}fromCart=true` : ''}`}
+          href={`/${lang}/login${returnUrl !== '/' ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}${fromCart ? `${returnUrl !== '/' ? '&' : '?'}fromCart=true` : ''}`}
           className="font-medium text-orange-600 hover:text-orange-500"
         >
           <TranslatedContent translationKey="auth.signIn" />

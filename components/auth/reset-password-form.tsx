@@ -156,7 +156,7 @@ export function ResetPasswordForm() {
       }
 
       toast.success(t('auth.passwordResetSuccess'));
-      router.push('/login');
+      router.push(`/${lang}/login`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('auth.failedToReset'));
     } finally {
@@ -197,7 +197,7 @@ export function ResetPasswordForm() {
 
         <div className="text-center mt-4">
           <Link
-            href="/login"
+            href={`/${lang}/login`}
             className="inline-flex items-center text-sm font-medium text-orange-600 hover:text-orange-500"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
