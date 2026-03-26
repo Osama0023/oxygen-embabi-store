@@ -15,7 +15,7 @@ interface VerificationFormProps {
 
 export function VerificationForm({ email, returnUrl, fromCart = false }: VerificationFormProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -100,10 +100,10 @@ export function VerificationForm({ email, returnUrl, fromCart = false }: Verific
       // If coming from cart, redirect straight to the checkout after verification
       if (fromCart) {
         // Redirect to login with parameters to go to checkout after login
-        router.push(`/login?returnUrl=${encodeURIComponent('/checkout')}&verified=true`);
+        router.push(`/${lang}/login?returnUrl=${encodeURIComponent('/checkout')}&verified=true`);
       } else {
         // Regular flow - redirect to login page with return URL
-        router.push(`/login${returnUrl !== '/' ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}${returnUrl !== '/' ? '&' : '?'}verified=true`);
+        router.push(`/${lang}/login${returnUrl !== '/' ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}${returnUrl !== '/' ? '&' : '?'}verified=true`);
       }
     } catch (error: any) {
       console.error('Verification error:', error);
