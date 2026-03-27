@@ -7,8 +7,8 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { notFound } from "next/navigation";
 
-// Add revalidation - cache for 5 minutes
-export const revalidate = 21600;
+// Cache for 12 hours. Brand listings refresh via product invalidation.
+export const revalidate = 43200;
 
 interface BrandPageProps {
   params: {

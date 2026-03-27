@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminRequest } from "@/lib/admin-auth";
 import { requireCsrfOrReject } from "@/lib/csrf";
+import { invalidateProductCaches } from "@/lib/cache-invalidation";
 
 export async function GET(request: Request) {
   try {
@@ -99,6 +100,16 @@ export async function POST(request: Request) {
           })),
         },
       },
+    });
+
+    const category = await prisma.category.findUnique({
+      where: { id: data.categoryId },
+      select: { slug: true },
+    });
+
+    invalidateProductCaches({
+      slug: product.slug,
+      categorySlug: category?.slug ?? null,
     });
 
     return NextResponse.json(product);

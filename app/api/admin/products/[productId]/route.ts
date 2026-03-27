@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminRequest } from "@/lib/admin-auth";
 import { requireCsrfOrReject } from "@/lib/csrf";
+import { invalidateProductCaches } from "@/lib/cache-invalidation";
 
 export async function GET(
   request: Request,
@@ -15,6 +16,7 @@ export async function GET(
     if (!productId) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
+
     const product = await prisma.product.findUnique({
       where: { id: productId },
       include: {
@@ -74,6 +76,18 @@ export async function DELETE(
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
+    const existingProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      select: {
+        slug: true,
+        category: {
+          select: {
+            slug: true,
+          },
+        },
+      },
+    });
+
     // Check if product is used in any orders
     const orderItems = await prisma.orderItem.findFirst({
       where: { productId },
@@ -126,6 +140,11 @@ export async function DELETE(
       await tx.product.delete({
         where: { id: productId },
       });
+    });
+
+    invalidateProductCaches({
+      slug: existingProduct?.slug ?? null,
+      categorySlug: existingProduct?.category?.slug ?? null,
     });
 
     return NextResponse.json({ message: 'Product deleted successfully' });

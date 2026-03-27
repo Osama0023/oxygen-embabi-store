@@ -278,6 +278,15 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
       const responseData = await response.json();
 
       if (!response.ok) {
+        if (responseData?.code === 'PRICE_CHANGED') {
+          toast.error(
+            lang === 'ar'
+              ? 'تم تحديث أسعار بعض المنتجات. راجع سلة التسوق ثم حاول مرة أخرى.'
+              : 'Some product prices were updated. Please review your cart and try again.'
+          );
+          router.push('/cart');
+          return;
+        }
         const errorMessage = responseData.detail 
           ? `${responseData.error}: ${responseData.detail}` 
           : (responseData.error || t('checkout.failedToPlaceOrder'));

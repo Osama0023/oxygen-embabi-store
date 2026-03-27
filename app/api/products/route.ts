@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminRequest } from "@/lib/admin-auth";
 import { requireCsrfOrReject } from "@/lib/csrf";
+import { invalidateProductCaches } from "@/lib/cache-invalidation";
 
 export async function POST(request: Request) {
   try {
@@ -104,6 +105,11 @@ export async function POST(request: Request) {
       },
       // Include relations in response
       include: {
+        category: {
+          select: {
+            slug: true,
+          },
+        },
         variants: true,
         details: true,
         storages: {
@@ -135,6 +141,11 @@ export async function POST(request: Request) {
         })),
       })),
     };
+
+    invalidateProductCaches({
+      slug: product.slug,
+      categorySlug: product.category?.slug ?? null,
+    });
 
     return NextResponse.json(serializedProduct);
   } catch (error) {

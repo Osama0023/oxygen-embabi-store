@@ -5,8 +5,8 @@ import { translations } from "@/lib/translations";
 import { getProductDisplayPrice } from "@/lib/utils";
 import { isValidLocale, type Locale } from "@/lib/i18n";
 
-// Add revalidation - cache for 3 minutes (deals change frequently)
-export const revalidate = 21600;
+// Cache for 12 hours. Deals are invalidated after admin product edits.
+export const revalidate = 43200;
 
 const ITEMS_PER_PAGE = 20;
 
