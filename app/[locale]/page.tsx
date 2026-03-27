@@ -11,8 +11,8 @@ import { TranslatedContent } from "@/components/ui/translated-content";
 import { getProductDisplayPrice } from "@/lib/utils";
 import { groupCategoriesByBrand } from "@/lib/brand-utils";
 
-// Add revalidation - cache for 5 minutes
-export const revalidate = 21600;
+// Cache for 12 hours. Product mutations invalidate this page on-demand.
+export const revalidate = 43200;
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;

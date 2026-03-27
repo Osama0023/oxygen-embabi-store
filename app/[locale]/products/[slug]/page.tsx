@@ -6,8 +6,8 @@ import { Metadata } from "next";
 import { getProductDisplayPrice } from "@/lib/utils";
 import { locales } from "@/lib/i18n";
 
-// Revalidation: 6 hours
-export const revalidate = 21600;
+// Revalidation: 12 hours (with admin-triggered invalidation)
+export const revalidate = 43200;
 
 interface ProductPageProps {
   params: Promise<{ locale: string; slug: string }>;

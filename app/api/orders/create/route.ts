@@ -35,6 +35,65 @@ interface CouponInfo {
   minimumOrderAmount?: number | null;
 }
 
+type PriceMismatchItem = {
+  productId: string;
+  productName: string;
+  quantity: number;
+  clientUnitPrice: number;
+  serverUnitPrice: number;
+  storageId?: string | null;
+  unitId?: string | null;
+  selectedColor?: string | null;
+};
+
+const roundMoney = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+const moneyEquals = (a: number, b: number, tolerance = 0.01) => Math.abs(a - b) <= tolerance;
+
+function computeStorageUnitPrice(args: {
+  basePrice: number;
+  salePercentage: number | null;
+  saleEndDate: Date | null;
+  unit: {
+    taxStatus: string | null;
+    taxType: string | null;
+    taxAmount: unknown;
+    taxPercentage: unknown;
+  };
+}) {
+  const now = new Date();
+  const onSale =
+    args.salePercentage != null &&
+    args.saleEndDate != null &&
+    args.saleEndDate.getTime() > now.getTime();
+  const salePrice = onSale
+    ? args.basePrice - (args.basePrice * (Number(args.salePercentage) / 100))
+    : args.basePrice;
+
+  if (args.unit.taxStatus === "UNPAID") return salePrice;
+  if (args.unit.taxType === "FIXED") return salePrice + (Number(args.unit.taxAmount) || 0);
+  if (args.unit.taxType === "PERCENTAGE") return salePrice + (salePrice * (Number(args.unit.taxPercentage) || 0) / 100);
+  if (args.unit.taxAmount != null && Number(args.unit.taxAmount) > 0) return salePrice + Number(args.unit.taxAmount);
+  if (args.unit.taxPercentage != null && Number(args.unit.taxPercentage) > 0)
+    return salePrice + (salePrice * Number(args.unit.taxPercentage) / 100);
+  return salePrice;
+}
+
+function computeSimpleUnitPrice(args: {
+  price: number;
+  sale: number | null;
+  salePrice: number | null;
+  saleEndDate: Date | null;
+}) {
+  const now = new Date();
+  const onSale =
+    args.sale != null &&
+    args.saleEndDate != null &&
+    args.saleEndDate.getTime() > now.getTime();
+  if (!onSale) return args.price;
+  if (args.salePrice != null) return args.salePrice;
+  return args.price - (args.price * (Number(args.sale) / 100));
+}
+
 export async function POST(request: Request) {
   try {
     const csrfReject = requireCsrfOrReject(request);
@@ -193,7 +252,7 @@ export async function POST(request: Request) {
 
     // Validate product IDs and check stock availability (products must be in scope for transaction)
     console.log("Validating products and checking stock...");
-    let products: { id: string; name: string; stock: number | null; storages: { id: string; units: { id: string; color: string; stock: number }[] }[]; variants: { color: string; quantity: number }[] }[];
+    let products: any[];
     try {
       const productIds = items.map(item => item.id);
       console.log("Product IDs to validate:", productIds);
@@ -202,12 +261,13 @@ export async function POST(request: Request) {
       products = await prisma.product.findMany({
         where: { id: { in: productIds } },
         include: {
+          category: { select: { id: true } },
           variants: true,
           storages: {
             include: {
               units: true
             }
-          }
+          },
         }
       });
       console.log("Found existing products:", products.length);
@@ -323,6 +383,163 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Failed to validate products` }, { status: 500 });
     }
 
+    // Server-authoritative pricing validation (prevents stale/tampered prices)
+    const mismatches: PriceMismatchItem[] = [];
+    const computedOrderItems = items.map((orderItem) => {
+      const product = products.find((p) => p.id === orderItem.id);
+      if (!product) {
+        // Existence already validated above; keep safe fallback.
+        mismatches.push({
+          productId: orderItem.id,
+          productName: "Unknown",
+          quantity: orderItem.quantity,
+          clientUnitPrice: Number(orderItem.price) || 0,
+          serverUnitPrice: NaN,
+          storageId: orderItem.storageId ?? null,
+          unitId: orderItem.unitId ?? null,
+          selectedColor: orderItem.selectedColor ?? null,
+        });
+        return {
+          productId: orderItem.id,
+          quantity: orderItem.quantity,
+          price: Number(orderItem.price) || 0,
+          color: orderItem.selectedColor || null,
+          storageId: orderItem.storageId || null,
+          unitId: orderItem.unitId || null,
+        };
+      }
+
+      const productType: string = product.productType || (product.storages?.length ? "STORAGE" : "SIMPLE");
+      let serverUnitPrice: number;
+
+      if (productType === "STORAGE" && orderItem.storageId) {
+        const storage = (product.storages ?? []).find((s: any) => s.id === orderItem.storageId);
+        if (!storage) {
+          return NextResponse.json(
+            { error: `Selected storage not available for product: ${product.name}` },
+            { status: 400 }
+          ) as any;
+        }
+        const units = storage.units ?? [];
+        const unit =
+          orderItem.unitId
+            ? units.find((u: any) => u.id === orderItem.unitId)
+            : orderItem.selectedColor
+              ? units.find((u: any) => u.color === orderItem.selectedColor)
+              : units.find((u: any) => (u.stock ?? 0) > 0) ?? units[0];
+        if (!unit) {
+          return NextResponse.json(
+            { error: `Selected option not available for ${product.name}` },
+            { status: 400 }
+          ) as any;
+        }
+        serverUnitPrice = computeStorageUnitPrice({
+          basePrice: Number(storage.price),
+          salePercentage: storage.salePercentage != null ? Number(storage.salePercentage) : null,
+          saleEndDate: storage.saleEndDate ?? null,
+          unit: {
+            taxStatus: unit.taxStatus ?? null,
+            taxType: unit.taxType ?? null,
+            taxAmount: unit.taxAmount ?? null,
+            taxPercentage: unit.taxPercentage ?? null,
+          },
+        });
+      } else {
+        // SIMPLE (or fallback): price based on main product sale fields
+        serverUnitPrice = computeSimpleUnitPrice({
+          price: Number(product.price ?? 0),
+          sale: product.sale != null ? Number(product.sale) : null,
+          salePrice: product.salePrice != null ? Number(product.salePrice) : null,
+          saleEndDate: product.saleEndDate ?? null,
+        });
+      }
+
+      const clientUnitPrice = Number(orderItem.price) || 0;
+      const serverRounded = roundMoney(serverUnitPrice);
+      const clientRounded = roundMoney(clientUnitPrice);
+      if (!moneyEquals(clientRounded, serverRounded)) {
+        mismatches.push({
+          productId: product.id,
+          productName: product.name,
+          quantity: orderItem.quantity,
+          clientUnitPrice: clientRounded,
+          serverUnitPrice: serverRounded,
+          storageId: orderItem.storageId ?? null,
+          unitId: orderItem.unitId ?? null,
+          selectedColor: orderItem.selectedColor ?? null,
+        });
+      }
+
+      return {
+        productId: orderItem.id,
+        quantity: orderItem.quantity,
+        price: serverRounded,
+        color: orderItem.selectedColor || null,
+        storageId: orderItem.storageId || null,
+        unitId: orderItem.unitId || null,
+      };
+    });
+
+    // If any item returned a NextResponse above, short-circuit
+    if (computedOrderItems.some((x: any) => x instanceof NextResponse)) {
+      return computedOrderItems.find((x: any) => x instanceof NextResponse);
+    }
+
+    if (mismatches.length > 0) {
+      return NextResponse.json(
+        {
+          code: "PRICE_CHANGED",
+          error: "Prices updated",
+          detail: "Some items have changed in price. Please review your cart and try again.",
+          changedItems: mismatches,
+        },
+        { status: 409 }
+      );
+    }
+
+    const serverSubtotal = roundMoney(
+      (computedOrderItems as Array<{ price: number; quantity: number }>).reduce(
+        (sum, i) => sum + i.price * i.quantity,
+        0
+      )
+    );
+
+    // Recompute coupon discount server-side (don't trust client discountAmount)
+    let serverDiscount = 0;
+    if (couponData?.id) {
+      const coupon = await prisma.coupon.findUnique({
+        where: { id: couponData.id },
+        select: { type: true, value: true, minimumOrderAmount: true },
+      });
+      if (coupon) {
+        const minOrder = coupon.minimumOrderAmount != null ? Number(coupon.minimumOrderAmount) : null;
+        const meetsMin = !minOrder || minOrder <= 0 || serverSubtotal >= minOrder;
+        if (meetsMin) {
+          if (coupon.type === "PERCENTAGE") {
+            serverDiscount = roundMoney((serverSubtotal * Number(coupon.value)) / 100);
+          } else if (coupon.type === "FIXED") {
+            serverDiscount = roundMoney(Math.min(Number(coupon.value), serverSubtotal));
+          }
+        }
+      }
+    }
+
+    // Ensure the provided total can't be lower than products subtotal - discount.
+    const minimumAcceptableTotal = roundMoney(serverSubtotal - serverDiscount);
+    if (Number(total) < minimumAcceptableTotal) {
+      return NextResponse.json(
+        {
+          code: "TOTAL_MISMATCH",
+          error: "Invalid total",
+          detail: "Order total is lower than the calculated items total.",
+          serverSubtotal,
+          serverDiscount,
+          minimumAcceptableTotal,
+        },
+        { status: 400 }
+      );
+    }
+
     let paymentProof = null;
     
     // Only handle payment screenshot if it's a wallet payment
@@ -370,22 +587,22 @@ export async function POST(request: Request) {
     try {
       order = await prisma.$transaction(async (prisma) => {
         // 1. Create the order with order items
-        const orderItems = items.map((item: OrderItem) => ({
-          productId: item.id,
-          quantity: item.quantity,
-          price: item.price,
-          color: item.selectedColor || null,
-          storageId: item.storageId || null,
-          unitId: item.unitId || null,
-        }));
+        const orderItems = computedOrderItems as Array<{
+          productId: string;
+          quantity: number;
+          price: number;
+          color: string | null;
+          storageId: string | null;
+          unitId: string | null;
+        }>;
         
         console.log("Creating order with items count:", orderItems.length);
         
         const newOrder = await prisma.order.create({
           data: {
             userId: session.user.id,
-            total: total,
-            discountAmount: discountAmount || 0,
+            total: Number(total),
+            discountAmount: serverDiscount,
             couponId: couponData?.id || null, // Store the coupon ID
             status: 'PENDING', // Always start as PENDING, will be updated by webhook
             paymentMethod: paymentMethod === 'cash' || paymentMethod === 'cash_store_pickup' 

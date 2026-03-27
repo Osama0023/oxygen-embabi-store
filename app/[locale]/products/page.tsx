@@ -4,8 +4,8 @@ import { authOptions } from "@/app/api/auth/auth-options";
 import { getProductDisplayPrice } from "@/lib/utils";
 import { ProductsClient } from "@/components/products/products-client";
 
-// Add revalidation - cache for 3 minutes
-export const revalidate = 21600;
+// Cache for 12 hours. Admin mutations trigger on-demand invalidation.
+export const revalidate = 43200;
 
 interface SearchParams {
   page?: string;

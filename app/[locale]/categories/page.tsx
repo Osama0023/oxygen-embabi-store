@@ -6,8 +6,8 @@ import { SubcategoriesCarousel } from "@/components/categories/subcategories-car
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-// Add revalidation - cache for 10 minutes
-export const revalidate = 21600;
+// Cache for 12 hours. Product/category changes invalidate this page.
+export const revalidate = 43200;
 
 export default async function CategoriesPage() {
   // Fetch all parent categories with their children

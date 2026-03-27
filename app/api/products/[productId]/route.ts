@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/admin-auth";
 import { requireCsrfOrReject } from "@/lib/csrf";
+import { invalidateProductCaches } from "@/lib/cache-invalidation";
 
 export async function PUT(
   req: Request,
@@ -34,6 +35,18 @@ export async function PUT(
     if (!productId) {
       return new NextResponse("Product ID is required", { status: 400 });
     }
+
+    const existingProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      select: {
+        slug: true,
+        category: {
+          select: {
+            slug: true,
+          },
+        },
+      },
+    });
 
     const productType = bodyProductType || (storages?.length > 0 ? 'STORAGE' : 'SIMPLE');
     const finalPrice = productType === 'SIMPLE' && price != null ? parseFloat(price) : null;
@@ -191,6 +204,12 @@ export async function PUT(
         })),
       })),
     };
+
+    invalidateProductCaches({
+      slug: productWithRelations.slug,
+      categorySlug: productWithRelations.category?.slug ?? null,
+      previousCategorySlug: existingProduct?.category?.slug ?? null,
+    });
 
     return NextResponse.json(serializedProduct);
   } catch (error) {
