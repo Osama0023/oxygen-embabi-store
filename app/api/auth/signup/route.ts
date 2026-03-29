@@ -3,7 +3,7 @@ import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { generateVerificationCode } from "@/lib/verification";
 import { sendVerificationEmail } from "@/lib/email";
-import { validateEmail, validatePassword, validateName, sanitizeInput } from "@/lib/validation";
+import { validateEmail, validatePassword, validateName, sanitizeInput, normalizeEmail } from "@/lib/validation";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     
     // Sanitize inputs
     const sanitizedData = {
-      email: sanitizeInput(data.email || ''),
+      email: normalizeEmail(data.email || ''),
       password: data.password || '',
       name: sanitizeInput(data.name || '')
     };
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
         // Update the existing user with a new verification code
         await prisma.user.update({
-          where: { email: data.email },
+          where: { email: sanitizedData.email },
           data: {
             verificationCode,
             verificationCodeExpiry: verificationExpiry,

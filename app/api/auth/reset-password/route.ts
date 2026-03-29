@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { hash, compare } from "bcryptjs";
 import { createAndSendVerificationCode, verifyCode } from "@/lib/verification";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
-import { validatePassword } from "@/lib/validation";
+import { validatePassword, normalizeEmail } from "@/lib/validation";
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +16,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const { email, step, code, password } = await req.json();
+    const { email: rawEmail, step, code, password } = await req.json();
+    const email = typeof rawEmail === "string" ? normalizeEmail(rawEmail) : "";
 
     // Step 1: Request password reset (send verification code)
     if (step === "request") {
