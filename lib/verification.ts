@@ -1,5 +1,6 @@
 import { prisma } from './prisma';
 import { sendVerificationEmail } from './email';
+import { normalizeEmail } from './validation';
 
 // Generate a random 6-digit verification code
 export function generateVerificationCode(): string {
@@ -25,8 +26,9 @@ export function canRequestNewCode(lastSent: Date | null): boolean {
 // Create and send a verification code
 export async function createAndSendVerificationCode(email: string, name?: string): Promise<boolean> {
   try {
+    const normalized = normalizeEmail(email);
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email: normalized }
     });
     
     if (!user) {
@@ -43,7 +45,7 @@ export async function createAndSendVerificationCode(email: string, name?: string
     expiryTime.setMinutes(expiryTime.getMinutes() + 10); // Code expires in 10 minutes
     
     await prisma.user.update({
-      where: { email },
+      where: { email: normalized },
       data: {
         verificationCode: code,
         verificationCodeExpiry: expiryTime,
@@ -53,7 +55,7 @@ export async function createAndSendVerificationCode(email: string, name?: string
     });
     
     try {
-      await sendVerificationEmail(email, code, name);
+      await sendVerificationEmail(normalized, code, name);
     } catch (emailError) {
       console.error(`Error sending verification email to ${email}:`, emailError);
       // Continue even if email sending fails
@@ -69,8 +71,9 @@ export async function createAndSendVerificationCode(email: string, name?: string
 // Verify a code
 export async function verifyCode(email: string, code: string): Promise<{ success: boolean; message: string }> {
   try {
+    const normalized = normalizeEmail(email);
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email: normalized }
     });
     
     if (!user) {
@@ -102,7 +105,7 @@ export async function verifyCode(email: string, code: string): Promise<{ success
     if (user.verificationCode !== code) {
       // Increment attempts
       await prisma.user.update({
-        where: { email },
+        where: { email: normalized },
         data: {
           verificationAttempts: {
             increment: 1
@@ -115,7 +118,7 @@ export async function verifyCode(email: string, code: string): Promise<{ success
     
     // Code is valid, mark user as verified
     await prisma.user.update({
-      where: { email },
+      where: { email: normalized },
       data: {
         emailVerified: true,
         verificationCode: null,

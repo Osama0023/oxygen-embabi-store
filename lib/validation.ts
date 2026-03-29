@@ -113,4 +113,9 @@ export function sanitizeInput(input: string): string {
     .trim()
     .replace(/[<>\"'&]/g, '') // Remove potentially dangerous characters
     .replace(/\s+/g, ' '); // Normalize whitespace
+}
+
+/** Lowercase + sanitize so DB lookups match web and mobile login (Postgres emails are case-sensitive). */
+export function normalizeEmail(email: string): string {
+  return sanitizeInput(email).toLowerCase();
 } 

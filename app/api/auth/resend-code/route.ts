@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAndSendVerificationCode, canRequestNewCode } from "@/lib/verification";
 import { prisma } from "@/lib/prisma";
-import { validateEmail } from "@/lib/validation";
+import { validateEmail, normalizeEmail } from "@/lib/validation";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
@@ -15,8 +15,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email } = await request.json();
-    
+    const { email: rawEmail } = await request.json();
+    const email = typeof rawEmail === "string" ? normalizeEmail(rawEmail) : "";
+
     if (!email) {
       return NextResponse.json(
         { error: 'Email is required' },
