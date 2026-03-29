@@ -19,11 +19,11 @@ export async function POST(request: Request) {
 
     const data = await request.json();
     
-    // Sanitize inputs
+    // Sanitize inputs (trim password so hash matches what users type at login)
     const sanitizedData = {
       email: normalizeEmail(data.email || ''),
-      password: data.password || '',
-      name: sanitizeInput(data.name || '')
+      password: typeof data.password === "string" ? data.password.trim() : "",
+      name: sanitizeInput(data.name || "")
     };
     
     // Validate all inputs
@@ -91,8 +91,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // Hash password
-    const hashedPassword = await hash(data.password, 12);
+    // Hash password (must use same string as validated above, not raw body)
+    const hashedPassword = await hash(sanitizedData.password, 12);
 
     // Generate verification code
     const verificationCode = generateVerificationCode();

@@ -11,13 +11,17 @@ export async function GET(req: Request, context: NextAuthRouteContext) {
 }
 
 export async function POST(req: Request, context: NextAuthRouteContext) {
-  const key = getRateLimitKey(req);
-  const limit = checkRateLimit(key, "login");
-  if (!limit.success) {
-    return new Response(
-      JSON.stringify({ error: "Too many login attempts. Please try again later." }),
-      { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "60" } }
-    );
+  // Only rate-limit credential sign-in, not every NextAuth POST (session updates, signout, etc.)
+  const pathname = new URL(req.url).pathname;
+  if (pathname.endsWith("/callback/credentials")) {
+    const key = getRateLimitKey(req);
+    const limit = checkRateLimit(key, "login");
+    if (!limit.success) {
+      return new Response(
+        JSON.stringify({ error: "Too many login attempts. Please try again later." }),
+        { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "60" } }
+      );
+    }
   }
   return handler(req, context);
 } 

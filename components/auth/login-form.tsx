@@ -60,7 +60,15 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        toast.error(t('auth.invalidCredentials'));
+        // NextAuth often returns CredentialsSignin; thrown authorize() messages come through as the error string
+        const err = String(result.error);
+        if (err === "CredentialsSignin") {
+          toast.error(t("auth.invalidCredentials"));
+        } else if (err.toLowerCase().includes("verify")) {
+          toast.error(err);
+        } else {
+          toast.error(err || t("auth.invalidCredentials"));
+        }
       } else {
         // Check user role and redirect accordingly
         const response = await fetch('/api/auth/check-role');

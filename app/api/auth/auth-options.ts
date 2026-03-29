@@ -15,11 +15,19 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        const rawEmail = credentials?.email;
+        const rawPassword = credentials?.password;
+        if (
+          rawEmail == null ||
+          rawPassword == null ||
+          String(rawEmail).trim() === "" ||
+          String(rawPassword) === ""
+        ) {
           throw new Error("Invalid credentials");
         }
 
-        const email = normalizeEmail(credentials.email);
+        const email = normalizeEmail(String(rawEmail));
+        const passwordInput = String(rawPassword).trim();
         const user = await prisma.user.findUnique({
           where: { email }
         });
@@ -32,7 +40,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Please verify your email before logging in");
         }
 
-        const isValid = await compare(credentials.password, user.password);
+        const isValid = await compare(passwordInput, user.password);
         if (!isValid) {
           throw new Error("Invalid credentials");
         }
