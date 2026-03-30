@@ -3,5 +3,5 @@
  * Base = subtotal + shipping − coupon discount (checkout `totalWithDiscount`).
  */
 export function computeSuperPayVatEgp(baseEgp: number): number {
-  return Math.round(baseEgp * 0.02) + 2;
+  return Math.round(baseEgp * 0.02);
 }
