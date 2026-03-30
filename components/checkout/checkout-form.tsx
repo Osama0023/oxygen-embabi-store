@@ -785,7 +785,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
                 <>
                   <div className="flex justify-between text-blue-700">
                     <span>
-                      {lang === 'ar' ? 'ضريبة (1.25% + 2 جنيه)' : 'VAT (1.25% + 2 EGP)'}
+                      {lang === 'ar' ? 'ضريبة (2%)' : 'VAT (2%)'}
                     </span>
                     <span>EGP {superpayFee.toLocaleString()}</span>
                   </div>
