@@ -45,6 +45,21 @@ const EGYPTIAN_STATES = [
 ].sort();
 
 type PaymentMethod = 'cash' | 'online' | 'cash_store_pickup' | 'online_store_pickup';
+const PAYMENT_METHODS_ORDER: PaymentMethod[] = ['cash', 'online', 'cash_store_pickup', 'online_store_pickup'];
+const toDisabledPaymentCode = (method: PaymentMethod) => {
+  switch (method) {
+    case 'cash':
+      return 'CASH';
+    case 'online':
+      return 'ONLINE';
+    case 'cash_store_pickup':
+      return 'CASH_STORE_PICKUP';
+    case 'online_store_pickup':
+      return 'ONLINE_STORE_PICKUP';
+    default:
+      return '';
+  }
+};
 
 interface CheckoutFormProps {
   user: {
@@ -123,6 +138,20 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
   const { isMaintenanceMode, maintenanceMessage, disabledPaymentMethods } = useMaintenance();
   const isAdmin = user.role === "ADMIN";
   const effectiveDisabledPaymentMethods = isAdmin ? [] : disabledPaymentMethods;
+  const isSelectedMethodDisabled = effectiveDisabledPaymentMethods.includes(
+    toDisabledPaymentCode(selectedPaymentMethod)
+  );
+
+  useEffect(() => {
+    if (isAdmin) return;
+    if (!isSelectedMethodDisabled) return;
+    const firstEnabled = PAYMENT_METHODS_ORDER.find(
+      (method) => !effectiveDisabledPaymentMethods.includes(toDisabledPaymentCode(method))
+    );
+    if (firstEnabled) {
+      setSelectedPaymentMethod(firstEnabled);
+    }
+  }, [isAdmin, isSelectedMethodDisabled, effectiveDisabledPaymentMethods, selectedPaymentMethod]);
 
   // Disable body scroll and interactions while loading
   useEffect(() => {
@@ -194,6 +223,11 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
     
     if (isMaintenanceMode && !isAdmin) {
       toast.error(maintenanceMessage || 'Site is currently under maintenance. Please try again later.');
+      return;
+    }
+
+    if (isSelectedMethodDisabled) {
+      toast.error(lang === 'ar' ? 'طريقة الدفع المحددة غير متاحة حالياً.' : 'Selected payment method is currently unavailable.');
       return;
     }
 
@@ -807,7 +841,7 @@ export default function CheckoutForm({ user, items, subtotal, shipping, onOrderC
             <button
               type="submit"
               form="checkout-form"
-              disabled={!couponFetchComplete || isLoading || (isMaintenanceMode && !isAdmin) || (!meetsMinimumOrder && !!appliedCoupon)}
+              disabled={!couponFetchComplete || isLoading || (isMaintenanceMode && !isAdmin) || (!meetsMinimumOrder && !!appliedCoupon) || isSelectedMethodDisabled}
               className="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {!couponFetchComplete ? (

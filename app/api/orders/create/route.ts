@@ -35,6 +35,32 @@ interface CouponInfo {
   minimumOrderAmount?: number | null;
 }
 
+type ProductWithRelations = Awaited<ReturnType<typeof prisma.product.findMany>>[number];
+
+type ComputedOrderItem = {
+  productId: string;
+  quantity: number;
+  price: number;
+  color: string | null;
+  storageId: string | null;
+  unitId: string | null;
+};
+
+const paymentMethodToDisabledCode = (paymentMethod: string) => {
+  switch (paymentMethod) {
+    case "cash":
+      return "CASH";
+    case "online":
+      return "ONLINE";
+    case "cash_store_pickup":
+      return "CASH_STORE_PICKUP";
+    case "online_store_pickup":
+      return "ONLINE_STORE_PICKUP";
+    default:
+      return null;
+  }
+};
+
 type PriceMismatchItem = {
   productId: string;
   productName: string;
@@ -153,6 +179,21 @@ export async function POST(request: Request) {
     console.log("Processing payment method...");
     const paymentMethod = formData.get('paymentMethod');
     console.log("Payment method:", paymentMethod);
+    const paymentMethodCode =
+      typeof paymentMethod === "string" ? paymentMethodToDisabledCode(paymentMethod) : null;
+    if (!paymentMethodCode) {
+      return NextResponse.json({ error: "Invalid payment method" }, { status: 400 });
+    }
+
+    if (
+      session?.user?.role !== "ADMIN" &&
+      siteSettings?.disabledPaymentMethods?.includes(paymentMethodCode)
+    ) {
+      return NextResponse.json(
+        { error: "Selected payment method is currently unavailable" },
+        { status: 400 }
+      );
+    }
 
     // Parse shipping info with safer error handling
     let shippingInfo: ShippingInfo | null = null;
@@ -252,7 +293,7 @@ export async function POST(request: Request) {
 
     // Validate product IDs and check stock availability (products must be in scope for transaction)
     console.log("Validating products and checking stock...");
-    let products: any[];
+    let products: ProductWithRelations[] = [];
     try {
       const productIds = items.map(item => item.id);
       console.log("Product IDs to validate:", productIds);
@@ -413,25 +454,25 @@ export async function POST(request: Request) {
       let serverUnitPrice: number;
 
       if (productType === "STORAGE" && orderItem.storageId) {
-        const storage = (product.storages ?? []).find((s: any) => s.id === orderItem.storageId);
+        const storage = (product.storages ?? []).find((s) => s.id === orderItem.storageId);
         if (!storage) {
           return NextResponse.json(
             { error: `Selected storage not available for product: ${product.name}` },
             { status: 400 }
-          ) as any;
+          );
         }
         const units = storage.units ?? [];
         const unit =
           orderItem.unitId
-            ? units.find((u: any) => u.id === orderItem.unitId)
+            ? units.find((u) => u.id === orderItem.unitId)
             : orderItem.selectedColor
-              ? units.find((u: any) => u.color === orderItem.selectedColor)
-              : units.find((u: any) => (u.stock ?? 0) > 0) ?? units[0];
+              ? units.find((u) => u.color === orderItem.selectedColor)
+              : units.find((u) => (u.stock ?? 0) > 0) ?? units[0];
         if (!unit) {
           return NextResponse.json(
             { error: `Selected option not available for ${product.name}` },
             { status: 400 }
-          ) as any;
+          );
         }
         serverUnitPrice = computeStorageUnitPrice({
           basePrice: Number(storage.price),
@@ -481,8 +522,9 @@ export async function POST(request: Request) {
     });
 
     // If any item returned a NextResponse above, short-circuit
-    if (computedOrderItems.some((x: any) => x instanceof NextResponse)) {
-      return computedOrderItems.find((x: any) => x instanceof NextResponse);
+    const earlyResponse = computedOrderItems.find((x) => x instanceof NextResponse);
+    if (earlyResponse) {
+      return earlyResponse;
     }
 
     if (mismatches.length > 0) {
@@ -498,7 +540,7 @@ export async function POST(request: Request) {
     }
 
     const serverSubtotal = roundMoney(
-      (computedOrderItems as Array<{ price: number; quantity: number }>).reduce(
+      (computedOrderItems as ComputedOrderItem[]).reduce(
         (sum, i) => sum + i.price * i.quantity,
         0
       )
@@ -540,7 +582,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let paymentProof = null;
+    let paymentProof: string | null = null;
     
     // Only handle payment screenshot if it's a wallet payment
     if (paymentMethod === 'wallet') {
@@ -566,7 +608,7 @@ export async function POST(request: Request) {
             });
             
             if (result && typeof result === 'object' && 'secure_url' in result) {
-              paymentProof = (result as any).secure_url;
+              paymentProof = (result as { secure_url?: string }).secure_url ?? null;
               console.log("Payment proof uploaded successfully");
             }
           } catch (cloudinaryError) {
@@ -645,7 +687,7 @@ export async function POST(request: Request) {
         console.log("Updating product stock quantities...");
         
         // Prepare all updates to execute in parallel
-        const updatePromises: Promise<any>[] = [];
+        const updatePromises: Promise<unknown>[] = [];
         
         for (const item of items) {
           console.log(`Processing item ${item.id} - Quantity: ${item.quantity}, StorageId: ${item.storageId}, Color: ${item.selectedColor}`);
