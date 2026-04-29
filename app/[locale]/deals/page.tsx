@@ -4,6 +4,7 @@ import { Percent, ArrowRight } from "lucide-react";
 import { translations } from "@/lib/translations";
 import { getProductDisplayPrice } from "@/lib/utils";
 import { isValidLocale, type Locale } from "@/lib/i18n";
+import Link from "next/link";
 
 // Cache for 12 hours. Deals are invalidated after admin product edits.
 export const revalidate = 43200;
@@ -196,9 +197,9 @@ export default async function DealsPage({
             {totalPages > 1 && (
               <div className="mt-8 flex justify-center items-center gap-2">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <a
+                  <Link
                     key={page}
-                    href={`/deals?page=${page}`}
+                    href={`/${lang}/deals?page=${page}`}
                     className={`px-4 py-2 rounded-lg transition-colors ${
                       currentPage === page
                         ? 'bg-orange-600 text-white'
@@ -206,7 +207,7 @@ export default async function DealsPage({
                     }`}
                   >
                     {page}
-                  </a>
+                  </Link>
                 ))}
               </div>
             )}
@@ -220,13 +221,13 @@ export default async function DealsPage({
             <p className="text-gray-500 mb-6">
               {t('deals.checkBackLater')}
             </p>
-            <a
-              href="/products"
+            <Link
+              href={`/${lang}/products`}
               className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium"
             >
               {t('deals.browseAllProducts')}
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         )}
       </div>

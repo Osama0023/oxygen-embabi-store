@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Category } from '@prisma/client';
 
 interface ProductFiltersProps {
@@ -9,6 +9,7 @@ interface ProductFiltersProps {
 
 export function ProductFilters({ categories }: ProductFiltersProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const handleCategoryChange = (value: string) => {
@@ -18,7 +19,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
     } else {
       params.delete('category');
     }
-    router.push(`/products?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleSortChange = (value: string) => {
@@ -28,7 +29,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
     } else {
       params.delete('sort');
     }
-    router.push(`/products?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
