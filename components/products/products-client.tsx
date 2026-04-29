@@ -3,7 +3,7 @@
 import { ProductGrid } from "@/components/products/product-grid";
 import { ProductFilters } from "@/components/products/product-filters";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { TranslatedContent } from "@/components/ui/translated-content";
 
 interface Category {
@@ -38,13 +38,14 @@ export function ProductsClient({
   totalPages
 }: ProductsClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParamsObj = useSearchParams();
   const currentPage = Number(searchParams.page) || 1;
   
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParamsObj.toString());
     params.set('page', page.toString());
-    router.push(`/products?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (

@@ -34,7 +34,8 @@ export async function middleware(request: NextRequest) {
     if (!pathnameHasLocale) {
       // Path like /products, /contact - redirect to /en/products, /en/contact
       const newPath = `/${defaultLocale}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
-      return NextResponse.redirect(new URL(newPath, request.url));
+      const search = request.nextUrl.search || "";
+      return NextResponse.redirect(new URL(`${newPath}${search}`, request.url));
     }
     const segment = pathname.split("/")[1];
     if (!isValidLocale(segment)) {

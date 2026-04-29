@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { useTranslation } from '@/hooks/use-translation';
@@ -23,6 +23,7 @@ export function ProductFilters({
   maxPrice,
 }: ProductFiltersProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
 
@@ -71,14 +72,14 @@ export function ProductFilters({
       maxPrice: priceRange[1] < (maxPrice || 10000) ? priceRange[1].toString() : null,
       hasSale: hasSale ? 'true' : null,
     });
-    router.push(`/products?${params}`);
+    router.push(params ? `${pathname}?${params}` : pathname);
   };
 
   const clearFilters = () => {
     setParentCategory('');
     setPriceRange([0, maxPrice || 10000]);
     setHasSale(false);
-    router.push('/products');
+    router.push(pathname);
   };
 
   const hasActiveFilters =

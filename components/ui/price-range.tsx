@@ -1,11 +1,12 @@
 'use client';
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export function PriceRange() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [min, setMin] = useState(searchParams.get('min') || '');
   const [max, setMax] = useState(searchParams.get('max') || '');
@@ -19,8 +20,8 @@ export function PriceRange() {
     else params.delete('min');
     if (debouncedMax) params.set('max', debouncedMax);
     else params.delete('max');
-    router.push(`/products?${params.toString()}`);
-  }, [debouncedMin, debouncedMax, router, searchParams]);
+    router.push(`${pathname}?${params.toString()}`);
+  }, [debouncedMin, debouncedMax, pathname, router, searchParams]);
 
   return (
     <div className="space-y-2">
